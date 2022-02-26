@@ -128,115 +128,137 @@ public:
 	__declspec( property( get = GetAvgStations, put = SetAvgStations ) )
 		int AvgStations;
 
-	// maximum temperature
+	// average maximum temperature
 	inline float GetMaximum()
 	{
 		// value which indicates missing data
 		const float fMissing = CClimateTemperature::GetMissingValue();
 
-		bool bFirst = true;
-
 		// begin with the persisted value
 		float value = m_fMaximum;
 
-		// if the maximum has already been calculated, use the 
+		// if the average maximum has already been calculated, use the 
 		// persisted value;
 		if ( !CHelper::NearlyEqual( value, fMissing ) )
 		{
 			return value;
 		}
 
-		// loop through the maximums looking for non-missing values
+		// average all of the valid maximum values
+		int nCount = 0; // the number of valid values
+		float fSum = 0; // sum of all valid values
+
+		// loop through the years looking for valid values
 		for ( auto& node : m_Maximums.Items )
 		{
-			// read the value for the year
-			const float fValue = node.second->Maximum;
+			// value for the year
+			const float fValue = node.second->Value;
 
 			// we are only interested measured values
 			if ( !CHelper::NearlyEqual( fValue, fMissing ))
 			{
-				// initialize the return value if this is the first 
+				// count to be used for averaging
+				nCount++;
+
+				// initialize the sum if this is the first 
 				// measured value
-				if ( bFirst )
+				if ( nCount == 1 )
 				{
-					value = fValue;
-					bFirst = false;
+					fSum = fValue;
 
 				} else
 				{
-					// maximize against the existing value and the measurement
-					value = max( value, fValue );
+					// add the value to the running sum
+					fSum += fValue;
 				}
 			}
 		}
 
-		// persist the value
-		Maximum = value;
+		// average the values if there are any readings
+		if ( nCount > 0 )
+		{
+			// calculate the average
+			value = fSum / nCount;
+
+			// persist the value
+			Maximum = value;
+		}
 
 		return value;
 	}
-	// maximum temperature
+	// average maximum temperature
 	inline void SetMaximum( float value )
 	{
 		m_fMaximum = value;
 	}
-	// maximum temperature
+	// average maximum temperature
 	__declspec( property( get = GetMaximum, put = SetMaximum ) )
 		float Maximum;
 
-	// minimum temperature
+	// average minimum temperature
 	inline float GetMinimum()
 	{
 		// value which indicates missing data
 		const float fMissing = CClimateTemperature::GetMissingValue();
 
-		bool bFirst = true;
-
 		// begin with the persisted value
 		float value = m_fMinimum;
 
-		// if the minimum has already been calculated, use the 
+		// if the average minimum has already been calculated, use the 
 		// persisted value;
 		if ( !CHelper::NearlyEqual( value, fMissing ) )
 		{
 			return value;
 		}
 
-		// loop through the minimums looking for non-missing values
+		// average all of the valid minimum values
+		int nCount = 0; // the number of valid values
+		float fSum = 0; // sum of all valid values
+
+		// loop through the years looking for valid values
 		for ( auto& node : m_Minimums.Items )
 		{
-			// read the value for the current year
+			// value for the year
 			const float fValue = node.second->Value;
 
 			// we are only interested measured values
-			if ( !CHelper::NearlyEqual( fValue, fMissing ) )
+			if ( !CHelper::NearlyEqual( fValue, fMissing ))
 			{
-				// initialize the return value if this is the first 
+				// count to be used for averaging
+				nCount++;
+
+				// initialize the sum if this is the first 
 				// measured value
-				if ( bFirst )
+				if ( nCount == 1 )
 				{
-					value = fValue;
-					bFirst = false;
+					fSum = fValue;
 
 				} else
 				{
-					// maximize against the existing value and the measurement
-					value = max( value, fValue );
+					// add the value to the running sum
+					fSum += fValue;
 				}
 			}
 		}
 
-		// persist the value
-		Minimum = value;
+		// average the values if there are any readings
+		if ( nCount > 0 )
+		{
+			// calculate the average
+			value = fSum / nCount;
+
+			// persist the value
+			Minimum = value;
+		}
 
 		return value;
 	}
-	// minimum temperature
+	// average minimum temperature
 	inline void SetMinimum( float value )
 	{
 		m_fMinimum = value;
 	}
-	// minimum temperature
+	// average minimum temperature
 	__declspec( property( get = GetMinimum, put = SetMinimum ) )
 		float Minimum;
 
