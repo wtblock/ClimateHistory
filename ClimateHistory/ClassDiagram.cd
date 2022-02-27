@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CHelper" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gCAAACCAABAAAAAAAAAAAAQAQAAAAIABEEAOAQhAICA=</HashCode>
+      <FileName>CHelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CClimateTemperature">
+    <Position X="9.75" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="CClimateTemperature::MEASURE_TYPE" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ClimateTemperature.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>GAEAACAAOACgICAEIAIAIQAIAMgAAAQlQAICAAUiAQg=</HashCode>
+      <FileName>ClimateTemperature.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CClimateStation" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAIDMAAAkIASAQkFAAIBAwAgEMACBAAADiBRwRERIA=</HashCode>
+      <FileName>ClimateStation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CClimateYear">
+    <Position X="5.25" Y="0.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>hCMoAAGgTyAQgkAAgAAICAABIIAAAQAhhjLAABWoUio=</HashCode>
+      <FileName>ClimateYear.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CKeyedCollection&lt;KEY, TYPE&gt;">
+    <Position X="2.75" Y="0.5" Width="2.25" />
+    <NestedTypes>
+      <Typedef Name="CKeyedCollection&lt;KEY, TYPE&gt;::PAIR_KEY_PTR" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>KeyedCollection.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Typedef>
+      <Typedef Name="CKeyedCollection&lt;KEY, TYPE&gt;::MAP_KEY_PTR" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>KeyedCollection.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Typedef>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AEAgAABAAAAACAAEBAAAAgQAFAAAAgAACQAAAAECAAA=</HashCode>
+      <FileName>KeyedCollection.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CStationYear">
+    <Position X="7.5" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Typedef Name="CStationYear::GREATER_COUNT" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>StationYear.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Typedef>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>gCAAAACg7gIAimRQkBAECAQJAAEAABQEhgJxBAAAIas=</HashCode>
+      <FileName>StationYear.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Typedef Name="YEAR_VALUE" Collapsed="true">
+    <Position X="0.5" Y="6.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ClimateHistory.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="CLIMATE_COUNT" Collapsed="true">
+    <Position X="0.5" Y="7" Width="5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ClimateHistory.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

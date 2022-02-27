@@ -12,17 +12,17 @@ using namespace std;
 // This class contains a single year of data for a single station and is
 // capable of parsing a single line of data from a tmax, tmin, or tavg file 
 // which can be downloaded from the following web site:
-
+//
 //	https://www.ncei.noaa.gov/products/land-based-station/us-historical-climatology-network
-
+//
 // The format for these files is a text file where the information is encoded
 // by column positions as defined in the following fragment from the web site's
 // readme.txt file located here:
-
+//
 //	https://www.ncei.noaa.gov/pub/data/ushcn/v2.5/readme.txt
-
+//
 // Fragment of readme.txt file pertinent to this class:
-
+//
 //	2.2  DATA
 //	
 //	Monthly data in the USHCN v2.5 data use a "3 flag" format
@@ -60,6 +60,11 @@ using namespace std;
 //	VALUE : monthly value( MISSING = -9999 ).Temperature values are in
 //		hundredths of a degree Celsius, but are expressed as whole
 //		integers( e.g.divide by 100.0 to get whole degrees Celsius ).
+// 
+//	This data can be found here:
+//
+//	https://www.ncei.noaa.gov/pub/data/ushcn/v2.5/
+//
 
 class CStationYear
 {
@@ -520,6 +525,9 @@ protected:
 		// parse the year (11 characters starting at 12)
 		Year = source.Mid( YearStart, YearLength );
 		
+		// the remainder of the source line are the 12 months of 
+		// temperature data which will be parsed by the constructor
+		// of the CClimateTemperature class
 		int nStart = MonthStart;
 		for ( int nMonth = 0; nMonth < 12; nMonth++ )
 		{
@@ -536,6 +544,8 @@ protected:
 		// generate entries for 90 to 130 degrees in 5 degree increments
 		for ( int n = 90; n <= 130; n += 5 )
 		{
+			// pairs of numbers representing temperature limit and the
+			// number of readings that exceed that limit
 			GREATER_COUNT value( n, 0 );
 			for ( auto& node : m_arrMonths )
 			{
@@ -549,6 +559,7 @@ protected:
 				}
 			}
 
+			// add the pair to our greater count array
 			m_GreaterCounts.push_back( value );
 		}
 	}
