@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UnitCategories>
+	<UnitCategory Name="Angle" Description="Angular measurements" PersistedUnit="deg" >
+		<UnitConversions>
+			<UnitConversion Unit="deg" Multiplier="1" Additive="0" />
+			<UnitConversion Unit="rad" Multiplier="0.0174532925" Additive="0" />
+		</UnitConversions>
+	</UnitCategory>
+	<UnitCategory Name="Date" Description="Days since 1900" PersistedUnit="d" >
+		<UnitConversions>
+			<UnitConversion Unit="d" Multiplier="1" Additive="0" />
+		</UnitConversions>
+	</UnitCategory>
+	<UnitCategory Name="Distance" Description="Measured distance" PersistedUnit="m" >
+		<UnitConversions>
+			<UnitConversion Unit="m" Multiplier="1" Additive="0" />
+			<UnitConversion Unit="in" Multiplier="39.3700787401" Additive="0" />
+			<UnitConversion Unit="ft" Multiplier="3.280839895" Additive="0" />
+			<UnitConversion Unit="mi" Multiplier="0.0006215" Additive="0" />
+			<UnitConversion Unit="mm" Multiplier="1000" Additive="0" />
+			<UnitConversion Unit="cm" Multiplier="100" Additive="0" />
+			<UnitConversion Unit="dm" Multiplier="10" Additive="0" />
+			<UnitConversion Unit="km" Multiplier="0.001" Additive="0" />
+		</UnitConversions>
+	</UnitCategory>
+	<UnitCategory Name="Temperature" Description="Measured temperature" PersistedUnit="degC" >
+		<UnitConversions>
+			<UnitConversion Unit="degC" Multiplier="1" Additive="0" />
+			<UnitConversion Unit="degF" Multiplier="1.8" Additive="32" />
+			<UnitConversion Unit="K" Multiplier="1" Additive="273.15" />
+		</UnitConversions>
+	</UnitCategory>
+</UnitCategories>

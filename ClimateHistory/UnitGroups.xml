@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DisplayUnits>
+	<UnitGroups Name="Imperial" Description="Unit settings for Imperial units">
+		<UnitGroup Category="Angle" Unit="deg" DecimalPlaces="4" />
+		<UnitGroup Category="Date" Unit="d" DecimalPlaces="8" />
+		<UnitGroup Category="Distance" Unit="ft" DecimalPlaces="2" />
+		<UnitGroup Category="Temperature" Unit="degF" DecimalPlaces="2" />
+	</UnitGroups>
+	<UnitGroups Name="Metric" Description="Unit settings for Metric units">
+		<UnitGroup Category="Angle" Unit="deg" DecimalPlaces="4" />
+		<UnitGroup Category="Date" Unit="d" DecimalPlaces="8" />
+		<UnitGroup Category="Distance" Unit="m" DecimalPlaces="2" />
+		<UnitGroup Category="Temperature" Unit="degC" DecimalPlaces="2" />
+	</UnitGroups>
+</DisplayUnits>

@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Data is organized in a folder hierarchy:-->
+<!--
+	The project folder is referred to as the root folder
+		Version - folder formatted as "version_name.ver"
+			if the stream is not versioned, the version is blank and the data is located in the root
+			Group - folder formatted as "group_name.grp" 
+				if the stream is not grouped, the group is blank and the data is located in the version or root
+				Collection Name - folder name under the root (if unversioned and ungrouped), version folder (if ungrouped), or group folder
+					Tabular data is stored in folders containing streams representing columns of the table
+					Telemetry data is stored like tables with the only limitation being the streams are all numerical
+-->
+
+<!--blank version indicates not versioned-->
+<!--blank folder indicates the data is not grouped-->
+<!--Data Type:
+		Subset of VARENUM:
+			VT_I2	 2		2 byte signed int
+			VT_I4	 3		4 byte signed int
+			VT_R4	 4		4 byte real
+			VT_R8	 5		8 byte real
+			VT_BSTR	 8,		text string
+			VT_I1	16		signed char
+			VT_UI1	17		unsigned char
+			VT_UI2	18		unsigned short
+			VT_UI4	19		unsigned long
+			VT_I8	20		signed 64-bit int
+			VT_UI8	21		unsigned 64-bit int
+-->
+<!--Size - of data in bytes, where an array of two 8 byte reals would be defined as 16-->
+
+<!--Data entry enumeration: 0-free form,1-enumeration,2-numbered enumeration,3-Boolean,4-versions,5-stream names,6-Date and time,7-Unit Category,8-Unit Name-->
+<DataSchema>
+	<Collection
+		Name="Directory"
+		Description="List of data streams in this project"
+		Schema="Directory"
+		ndexKeys="Name">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Version" Type="VT_BSTR" Size="32" UnitCategory="" Title="Version Name" Description="Top level folder of the collection (blank for unversioned data)" Entry="0" Enumeration=""/>
+		<Stream Name="Group" Type="VT_BSTR" Size="32" UnitCategory="" Title="Group Name" Description="Second level folder of associated collections (blank for ungrouped data)" Entry="0" Enumeration=""/>
+		<Stream Name="Name" Type="VT_BSTR" Size="32" UnitCategory="" Title="Stream Name" Description="Name of the stream in the collection" Entry="0" Enumeration=""/>
+		<Stream Name="Schema" Type="VT_BSTR" Size="32" UnitCategory="" Title="Schema Name" Description="Defines the collection streams" Entry="0" Enumeration=""/>
+		<Stream Name="Description" Type="VT_BSTR" Size="80" UnitCategory="" Title="Description" Description="Describes the contents of the stream" Entry="0" Enumeration=""/>
+		<Stream Name="Class" Type="short" Size="2" UnitCategory="" Title="Data classification" Description="Identifies the type of information" Entry="2" Enumeration="0,Directory,1,Tabular,2,Telemetry,3,Image,4,Text,5,blob"/>
+		<Stream Name="CreateionDate" Type="VT_R8" Size="8" UnitCategory="days" Title="Createion Date" Description="Date expressed as days since 1900" Entry="6" Enumeration=""/>
+		<Stream Name="ModificationDate" Type="VT_R8" Size="8" UnitCategory="days" Title="Modification Date" Description="Date expressed as days since 1900" Entry="6" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="UnitCategory"
+		Description="Types of engineering units"
+		Schema="UnitCategory"
+		ndexKeys="Name">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Name" Type="VT_BSTR" Size="32" UnitCategory="" Title="Category Name" Description="Category of engineering unit" Entry="0" Enumeration=""/>
+		<Stream Name="Description" Type="VT_BSTR" Size="80" UnitCategory="" Title="Description" Description="Describes the category of engineering unit" Entry="0" Enumeration=""/>
+		<Stream Name="PersistUnit" Type="VT_BSTR" Size="1" UnitCategory="" Title="Persisted Unit" Description="Unit of a value written into a file" Entry="0" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="UnitConversion"
+		Description="Conversion for a category's persisted unit to named unit"
+		Schema="UnitConversion"
+		ndexKeys="Category,Unit">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Category" Type="VT_BSTR" Size="32" UnitCategory="" Title="Category Name" Description="Category of engineering unit" Entry="0" Enumeration=""/>
+		<Stream Name="Unit" Type="VT_BSTR" Size="32" UnitCategory="" Title="Unit Name" Description="Engineering unit persisted unit is being converted to" Entry="0" Enumeration=""/>
+		<Stream Name="Multiplier" Type="VT_R4" Size="4" UnitCategory="" Title="Multiplier" Description="Multiplier to convert from persisted unit" Entry="0" Enumeration=""/>
+		<Stream Name="Additive" Type="VT_R4" Size="4" UnitCategory="" Title="Additive" Description="Amount to add to convert from persisted unit" Entry="0" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="UnitGroups"
+		Description="Lists the names of unit groups that can be displayed"
+		Schema="UnitGroups"
+		ndexKeys="Name">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Name" Type="VT_BSTR" Size="32" UnitCategory="" Title="Group Name" Description="Name of the group being displayed" Entry="0" Enumeration=""/>
+		<Stream Name="Description" Type="VT_BSTR" Size="80" UnitCategory="" Title="Description" Description="Describes the category of engineering unit" Entry="0" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="UnitGroup"
+		Description="Lists the units to be displayed for each unit group"
+		Schema="UnitGroup"
+		ndexKeys="Name,Category">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="" Enumeration=""/>
+		<Stream Name="Name" Type="VT_BSTR" Size="32" UnitCategory="" Title="Group Name" Description="Name of the group to display" Entry="0" Enumeration=""/>
+		<Stream Name="Category" Type="VT_BSTR" Size="32" UnitCategory="" Title="Category Name" Description="Describes the category of engineering unit" Entry="0" Enumeration=""/>
+		<Stream Name="Unit" Type="VT_BSTR" Size="32" UnitCategory="" Title="Unit Name" Description="Engineering unit to display" Entry="0" Enumeration=""/>
+		<Stream Name="DecimalPlaces" Type="VT_UI1" Size="1" UnitCategory="" Title="Decimal Places" Description="The number of digits after the decimal to be displayed" Entry="0" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="StationList"
+		Description="Tabulation of all stations"
+		Schema="StationList"
+		ndexKeys="Name">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Station" Type="VT_BSTR" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" Entry="0" Enumeration=""/>
+		<Stream Name="Latitude" Type="VT_R4" Size="4" UnitCategory="Angle" Title="Latitude" Description="Latitude in degrees of angle" Entry="0" Enumeration=""/>
+		<Stream Name="Longitude" Type="VT_R4" Size="4" UnitCategory="Angle" Title="Longitude" Description="Longitude in degrees of angle" Entry="0" Enumeration=""/>
+		<Stream Name="Elevation" Type="VT_R4" Size="4" UnitCategory="Distance" Title="Elevation" Description="Elevation in meters" Entry="0" Enumeration=""/>
+		<Stream Name="State" Type="VT_BSTR" Size="2" UnitCategory="" Title="State" Description="State the station is located in" Entry="0" Enumeration=""/>
+		<Stream Name="Location" Type="VT_BSTR" Size="30" UnitCategory="" Title="Location" Description="Name of the station location" Entry="0" Enumeration=""/>
+		<Stream Name="Component1" Type="VT_BSTR" Size="6" UnitCategory="" Title="Component 1" Description="Coop Id for the first station" Entry="0" Enumeration=""/>
+		<Stream Name="Component2" Type="VT_BSTR" Size="6" UnitCategory="" Title="Component 2" Description="Coop Id for the second station" Entry="0" Enumeration=""/>
+		<Stream Name="Component3" Type="VT_BSTR" Size="6" UnitCategory="" Title="Component 3" Description="Coop Id for the third station" Entry="0" Enumeration=""/>
+		<Stream Name="OffsetUTC" Type="VT_I1" Size="1" UnitCategory="" Title="UTC Offset" Description="The time difference between Coordinated Universal Time( UTC )" Entry="0" Enumeration=""/>
+		>
+	</Collection>
+	<Collection
+		Name="Station"
+		Description="List of data streams in this project"
+		Schema="Station"
+		ndexKeys="Station">
+		<Stream Name="GUID" Type="VT_BSTR" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" Entry="0" Enumeration=""/>
+		<Stream Name="Station" Type="VT_BSTR" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" Entry="0" Enumeration=""/>
+		<Stream Name="Date" Type="VT_R8" Size="8" UnitCategory="Date" Title="Measurement Date" Description="Date expressed as days since 1900" Entry="6" Enumeration=""/>
+		<Stream Name="Maximum" Type="VT_R4" Size="4" UnitCategory="Temperature" Title="Maximum temperature" Description="Maximum temperature in Celcius" Entry="0" Enumeration=""/>
+		<Stream Name="Minimum" Type="VT_R4" Size="4" UnitCategory="Temperature" Title="Minimum temperature" Description="Minimum temperature in Celcius" Entry="0" Enumeration=""/>
+		<Stream Name="Average" Type="VT_R4" Size="4" UnitCategory="Temperature" Title="Average temperature" Description="Average temperature in Celcius" Entry="0" Enumeration=""/>
+		<Stream Name="MaxDmFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Maximum DMFLAG" Description="Maximum data measurement flag" Entry="2" Enumeration="0,none,1,a,2,b,3,c,4,d,5,e,6,f,7,g,8,h,9,i,10,E"/>
+		<Stream Name="MinDmFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Minimum DMFLAG" Description="Minimum data measurement flag" Entry="2" Enumeration="0,none,1,a,2,b,3,c,4,d,5,e,6,f,7,g,8,h,9,i,10,E"/>
+		<Stream Name="AvgDmFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Average DMFLAG" Description="Average data measurement flag" Entry="2" Enumeration="0,none,1,a,2,b,3,c,4,d,5,e,6,f,7,g,8,h,9,i,10,E"/>
+		<Stream Name="MaxQcFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Maximum QCFLAG" Description="Maximum quality control flag" Entry="2" Enumeration="0,none,1,D,2,I,3,L,4,M,5,O,6,M,7,O,8,S,9,W,10,A,11,M"/>
+		<Stream Name="MinQcFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Minimum QCFLAG" Description="Minimum quality control flag" Entry="2" Enumeration="0,none,1,D,2,I,3,L,4,M,5,O,6,M,7,O,8,S,9,W,10,A,11,M"/>
+		<Stream Name="AvgQcFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Average QCFLAG" Description="Average quality control flag" Entry="2" Enumeration="0,none,1,D,2,I,3,L,4,M,5,O,6,M,7,O,8,S,9,W,10,A,11,M"/>
+		<Stream Name="MaxDsFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Maximum DSFLAG" Description="Maximum data source flag" Entry="2" Enumeration="0,none,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,B,10,D,11,G"/>
+		<Stream Name="MinDsFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Minimum DSFLAG" Description="Minimum data source flag" Entry="2" Enumeration="0,none,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,B,10,D,11,G"/>
+		<Stream Name="AvgDsFlag" Type="VTUI1" Size="1" UnitCategory="" Title="Average DSFLAG" Description="Average data source flag" Entry="2" Enumeration="0,none,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,B,10,D,11,G"/>
+		>
+	</Collection>
+</DataSchema>

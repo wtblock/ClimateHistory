@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{19e6ebda-79a7-40e9-a7b3-affa1417807c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -76,5 +79,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="DataSchema.xml">
+      <Filter>Configuration</Filter>
+    </Xml>
+    <Xml Include="UnitCategory.xml">
+      <Filter>Configuration</Filter>
+    </Xml>
+    <Xml Include="UnitGroups.xml">
+      <Filter>Configuration</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
