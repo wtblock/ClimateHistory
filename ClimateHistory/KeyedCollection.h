@@ -31,15 +31,13 @@ public:
 	{
 		return (int)m_mapItems.size(); 
 	}
+	// number of Items
+	__declspec( property( get = count ) )
+		int Count;
 
 	// clear all Items from the map
 	void clear()
-	{	// free up the resources in each item
-		for ( PAIR_KEY_PTR item : m_mapItems )
-		{
-			item.second.reset();
-		}
-
+	{
 		// empty the map
 		m_mapItems.clear();
 	}
@@ -50,7 +48,10 @@ public:
 		shared_ptr<TYPE> value = find( key );
 		return value != 0;
 	}
-	
+	// does the key exist in the map?
+	__declspec( property( get = exists ) )
+		bool Exists[];
+
 	// find a key in the map
 	shared_ptr<TYPE> find( KEY key )
 	{
@@ -72,7 +73,6 @@ public:
 		shared_ptr<TYPE> value = find( key );
 		if ( value != 0 )
 		{
-			delete value;
 			m_mapItems.erase( key );
 			bOK = true;
 		}
@@ -104,14 +104,6 @@ public:
 	// map of keyed items
 	__declspec( property( get=GetItems ))
 		MAP_KEY_PTR Items;
-
-	// number of Items
-	__declspec( property( get=count ))
-		int Count;
-
-	// does the key exist in the map?
-	__declspec( property( get=exists ))
-		bool Exists[];
 
 // public methods
 public:

@@ -3,6 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "stdafx.h"
+#include "comutil.h"
 #include <vector>
 
 using namespace std;
@@ -99,6 +100,22 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
+	template <class T> static void Message( LPCTSTR text, T number )
+	{
+		CString csMessage;
+		csMessage.Format( _T( "%s: %d\n" ), text, number );
+		TRACE( csMessage );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	static inline void ErrorMessage( LPCTSTR file, int line )
+	{
+		CString csMessage;
+		csMessage.Format( _T( "Exception in: %s\non line: %d\n" ), file, line );
+		TRACE( csMessage );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
 	// parse the filename from a pathname
 	static inline CString GetFileName( LPCTSTR pcszPath )
 	{
@@ -181,6 +198,31 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
+	// returns the application's current directory
+	static inline CString GetCurrentDirectory()
+	{
+		TCHAR pBuffer[ _MAX_PATH ];
+		::GetCurrentDirectory( _MAX_PATH, pBuffer );
+		CString value = pBuffer;
+		value += _T( "\\" );
+		return value;
+	}
+	/////////////////////////////////////////////////////////////////////////////
+	// This function creates a file system folder whose fully qualified 
+	// path is given by pszPath. If one or more of the intermediate 
+	// folders do not exist, they will be created as well. 
+	// returns true if the path is created or already exists
+	static inline bool CreatePath( LPCTSTR pszPath )
+	{
+		if ( ERROR_SUCCESS == SHCreateDirectoryEx( NULL, pszPath, NULL ) )
+		{
+			return true;
+		}
+
+		return false;
+	} // CreatePath
+
+	/////////////////////////////////////////////////////////////////////////////
 	// compare two reals and determine if they are nearly equal 
 	// (within the given error range)
 	template <class T> static inline bool NearlyEqual
@@ -200,7 +242,7 @@ public:
 		T value1, T value2, T error = T( 0.00001 )
 	)
 	{	// check for nearly equal first
-		const bool bEqual = CStaticHelper::NearlyEqual( value1, value2, error );
+		const bool bEqual = NearlyEqual( value1, value2, error );
 		if ( bEqual )
 		{
 			return false;
@@ -221,7 +263,7 @@ public:
 		T value1, T value2, T error = T( 0.00001 )
 	)
 	{	// check for nearly equal first
-		const bool bEqual = CStaticHelper::NearlyEqual( value1, value2, error );
+		const bool bEqual = NearlyEqual( value1, value2, error );
 		if ( bEqual )
 		{
 			return true;
@@ -242,7 +284,7 @@ public:
 		T value1, T value2, T error = T( 0.00001 )
 	)
 	{	// check for nearly equal first
-		const bool bEqual = CStaticHelper::NearlyEqual( value1, value2, error );
+		const bool bEqual = NearlyEqual( value1, value2, error );
 		if ( bEqual )
 		{
 			return true;
@@ -263,7 +305,7 @@ public:
 		T value1, T value2, T error = T( 0.00001 )
 	)
 	{	// check for nearly equal first
-		const bool bEqual = CStaticHelper::NearlyEqual( value1, value2, error );
+		const bool bEqual = NearlyEqual( value1, value2, error );
 		if ( bEqual )
 		{
 			return false;
@@ -386,7 +428,7 @@ public:
 
 		for each ( T value in arrValues )
 		{
-			if ( CStaticHelper::NearlyEqual( value, null ) )
+			if ( NearlyEqual( value, null ) )
 			{
 				continue;
 			}
@@ -456,6 +498,243 @@ public:
 		return value;
 	}
 
+	/////////////////////////////////////////////////////////////////////////////
+	// convert a variant input into given type and return true if successful
+	template <class T> static inline bool Convert
+	( 
+		_variant_t input, // input variant
+		VARENUM vt, // output variant being requested 
+		T& value // return value
+	)
+	{
+		value = 0;
+		bool bValue = false;
+
+		if ( SUCCEEDED( ::VariantChangeType( &input, &input, 0, vt ) ) )
+		{
+			bValue = true;
+		}
+		else // we are done
+		{
+			return bValue;
+		}
+
+		// convert the numeric value to the data type given
+		switch ( vt )
+		{
+			case VT_I1: value = (T)input.cVal; break;
+			case VT_UI1: value = (T)input.bVal; break;
+			case VT_I2: value = (T)input.iVal; break;
+			case VT_UI2: value = (T)input.uiVal; break;
+			case VT_I4: value = (T)input.lVal; break;
+			case VT_UI4: value = (T)input.ulVal; break;
+			case VT_I8: value = (T)input.llVal; break;
+			case VT_UI8: value = (T)input.ullVal : break;
+			case VT_R4: value = (T)input.fltVal; break;
+			case VT_R8: value = (T)input.dblVal; break;
+			case VT_BSTR: value = (T)input.bstrVal; break;
+			default: bValue = false;
+		}
+
+		return bValue;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// safe array (one dimensional) size in elements
+	static int GetOneDimensionalElementCount( const VARIANT& data )
+	{
+		long nUBound, nLBound;
+		::SafeArrayGetLBound( data.parray, 1, &nLBound );
+		::SafeArrayGetUBound( data.parray, 1, &nUBound );
+		return ( nUBound + 1 - nLBound );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// safe array (one dimensional) size in bytes
+	static int GetOneDimensionalSize( const VARIANT& data )
+	{
+		long nUBound, nLBound;
+		UINT uSize = ::SafeArrayGetElemsize( data.parray );
+		::SafeArrayGetLBound( data.parray, 1, &nLBound );
+		::SafeArrayGetUBound( data.parray, 1, &nUBound );
+		return ( nUBound + 1 - nLBound ) * uSize;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// copy string variant array into a vector of CStrings
+	bool CopyVariantStrings( VARIANT& Source, vector<CString>& Dest )
+	{
+		Dest.clear();
+
+		// expecting array of BSTR keys
+		bool bOK = Source.vt == ( VT_ARRAY | VT_BSTR );
+		if ( !bOK )
+		{
+			return false;
+		}
+
+		// number of source strings
+		const long lStrings = GetOneDimensionalElementCount( Source );
+		if ( lStrings == 0 )
+		{
+			return false;
+		}
+
+		COleSafeArray sa( Source );
+		BSTR* pData = 0;
+		sa.AccessData( (void**)&pData );
+		for ( long lString = 0; lString < lStrings; lString++ )
+		{
+			const CString csValue( pData[ lString ] );
+			Dest.push_back( csValue );
+		}
+
+		sa.UnaccessData();
+
+		return true;
+	} // CopyVariantStrings
+
+	/////////////////////////////////////////////////////////////////////////////
+	// copy string vector into a safe array
+	bool CopyStringVector( vector<CString>& Source, VARIANT* Dest )
+	{
+		::VariantInit( Dest );
+		const size_t lValues = Source.size();
+		if ( lValues == 0 )
+		{
+			return false;
+		}
+
+		// stuff the names into an array of BSTRs
+		vector<BSTR> arrBSTR( lValues );
+
+		// initialize VARIANTs and copy in the strings
+		for ( size_t lValue = 0; lValue < lValues; lValue++ )
+		{
+			arrBSTR[ lValue ] = Source[ lValue ].AllocSysString();
+		}
+
+		// create a 1 dimensional safe array of VARIANTs and initialize
+		COleSafeArray sa;
+		BSTR* pData = &arrBSTR[ 0 ];
+		sa.CreateOneDim( VT_BSTR, DWORD( lValues ), pData );
+
+		// copy out the result
+		const HRESULT hr = ::VariantCopy( Dest, &sa );
+		const bool bOK = SUCCEEDED( hr ) != FALSE;
+
+		return bOK;
+	} // CopyStringVector
+
+	/////////////////////////////////////////////////////////////////////////////
+	// copy a variant array to a vector
+	template <class T>
+	static inline bool CopyVariant
+	(
+		VARIANT& Source, // source safe array
+		VARENUM eVar, // type of variant expected
+		vector<T>& Dest // vector is returned
+	)
+	{
+		Dest.clear();
+		bool bOK = Source.vt == ( VT_ARRAY | eVar );
+		if ( !bOK )
+		{
+			return false;
+		}
+
+		// number of source values
+		const long lValues =
+			GetOneDimensionalElementCount( Source );
+		if ( lValues == 0 )
+		{
+			return false;
+		}
+
+		COleSafeArray sa( Source );
+		T* pData = 0;
+		sa.AccessData( (void**)&pData );
+		// performance enhancement
+		int bytes = GetOneDimensionalSize( Source );
+		Dest.resize( lValues );
+		memcpy( &Dest[ 0 ], pData, bytes );
+		sa.UnaccessData();
+		return true;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// copy vector into a safe array
+	template <class T>
+	static bool CopyVector
+	( 
+		vector<T>& Source, // source vector
+		VARENUM eVar, // destination type corresponding to source type
+		VARIANT* Dest // returned safe array
+	)
+	{
+		::VariantInit( Dest );
+		const long lValues = Source.size();
+		if ( lValues == 0 )
+		{
+			return false;
+		}
+
+		// create a 1 dimensional safe array of given type and initialize
+		COleSafeArray sa;
+		T* pData = &Source[ 0 ];
+		sa.CreateOneDim( eVar, lValues, pData );
+
+		// copy out the result
+		::VariantCopy( Dest, &sa );
+		return true;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// validate given string is numeric
+	bool ValidateNumeric( LPCTSTR value )
+	{
+		bool bValue = false;
+		TCHAR* stop;
+
+		// the following will handle the case of "100.0 m" by returning 100
+		// because it scans the string from left to right returning the stop
+		// pointer at the first non-numeric character
+		const double dValue = _tcstod( value, &stop );
+
+		// if zero is returned, then it is possible that the value was
+		// actually zero or the value is a non-numeric string
+		if ( NearlyEqual( dValue, 0.0, 0.000001 ) )
+		{
+			// zero is a number too, but zero is also the 
+			// result of a non-numeric value
+			_variant_t var = value;
+			if ( SUCCEEDED( ::VariantChangeType( &var, &var, 0, VT_R8 ) ) )
+			{
+				bValue = true;
+			}
+		}
+		else
+		{
+			bValue = true;
+		}
+
+		return bValue;
+	} // ValidateNumeric
+
+	/////////////////////////////////////////////////////////////////////////////
+	// generate GUID string like the following example: 
+	//		{6612CAF8-FFA1-49CD-B6E6-11208660E918}
+	static inline CString MakeGUID()
+	{
+		GUID guid;
+		::CoCreateGuid( &guid );
+		const int nLen = 39; // make room for null character at the end
+		OLECHAR str[ nLen ];
+		::StringFromGUID2( guid, str, nLen );
+		CString csGuid( str );
+		csGuid.MakeLower();
+		return csGuid;
+	};
 
 	/////////////////////////////////////////////////////////////////////////////
 	CHelper()

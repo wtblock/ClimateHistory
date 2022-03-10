@@ -50,7 +50,7 @@ protected:
 	CString m_csState;
 
 	// station location name
-	CString m_csName;
+	CString m_csLocation;
 
 	// COMPONENT 1 is the Coop Id for the first station( in chronological order ) 
 	// whose records were joined with those of the HCN site to form a longer time
@@ -70,7 +70,7 @@ protected:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	int m_nOffsetUTC;
+	CHAR m_nOffsetUTC;
 
 // public properties
 public:
@@ -94,7 +94,7 @@ public:
 		const float fLongitude = Longitude;
 		const float fElevation = Elevation;
 		const CString csState = State;
-		const CString csName = Name;
+		const CString csLocation = Location;
 		const int nOffsetUTC = OffsetUTC;
 	}
 	// single line of stations text file
@@ -125,7 +125,7 @@ public:
 	inline float GetLatitude()
 	{
 		// 8 characters starting at 12
-		const CString csValue = m_csSource.Mid( 12, 8 ).Trim();
+		const CString csValue = m_csSource.Mid( 12, 8 );
 		
 		// return value
 		const float value = (float)_tstof( csValue );
@@ -148,7 +148,7 @@ public:
 	inline float GetLongitude()
 	{
 		// 9 characters starting at 21
-		const CString csValue = m_csSource.Mid( 21, 9 ).Trim();
+		const CString csValue = m_csSource.Mid( 21, 9 );
 		
 		// return value
 		const float value = (float)_tstof( csValue );
@@ -171,7 +171,7 @@ public:
 	inline float GetElevation()
 	{
 		// 5 characters starting at 32
-		const CString csValue = m_csSource.Mid( 32, 5 ).Trim();
+		const CString csValue = m_csSource.Mid( 32, 5 );
 		
 		// return value
 		const float value = (float)_tstof( csValue );
@@ -211,24 +211,24 @@ public:
 		CString State;
 
 	// name of the station location
-	inline CString GetName()
+	inline CString GetLocation()
 	{
 		// 30 characters starting at 41
-		const CString value = m_csSource.Mid( 41, 30 ).Trim();
+		const CString value = m_csSource.Mid( 41, 30 );
 
 		// persist the value
-		Name = value;
+		Location = value;
 
 		return value;
 	}
 	// name of the station location
-	inline void SetName( CString value )
+	inline void SetLocation( CString value )
 	{
-		m_csName = value;
+		m_csLocation = value;
 	}
 	// name of the station location
-	__declspec( property( get = GetName, put = SetName ) )
-		CString Name;
+	__declspec( property( get = GetLocation, put = SetLocation ) )
+		CString Location;
 
 	// COMPONENT 1 is the Coop Id for the first station( in chronological order ) 
 	// whose records were joined with those of the HCN site to form a longer time
@@ -311,13 +311,13 @@ public:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	inline int GetOffsetUTC()
+	inline CHAR GetOffsetUTC()
 	{
 		// 2 characters starting at 93
-		const CString csValue = m_csSource.Mid( 93, 2 ).Trim();
+		const CString csValue = m_csSource.Mid( 93, 2 );
 		
 		// return value
-		const int value = (int)_tstol( csValue );
+		const CHAR value = (CHAR)_tstol( csValue );
 
 		// persist the value
 		OffsetUTC = value;
@@ -327,7 +327,7 @@ public:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	inline void SetOffsetUTC( int value )
+	inline void SetOffsetUTC( CHAR value )
 	{
 		m_nOffsetUTC = value;
 	}
@@ -335,7 +335,7 @@ public:
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
 	__declspec( property( get = GetOffsetUTC, put = SetOffsetUTC ) )
-		int OffsetUTC;
+		CHAR OffsetUTC;
 	
 // protected methods
 protected:

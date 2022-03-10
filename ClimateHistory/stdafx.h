@@ -33,4 +33,8 @@
 #include <atlbase.h>
 #include <atlstr.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 // TODO: reference additional headers your program requires here
