@@ -28,12 +28,12 @@ bool CProject::ReadDataSchema( const CString& csExe )
 
 /////////////////////////////////////////////////////////////////////////////
 // create the station list
-long CProject::CreateStationList
+ULONG CProject::CreateStationList
 ( 
 	CKeyedCollection<CString, CClimateStation>& stations 
 )
 {
-	long value = 0;
+	ULONG value = 0;
 
 	// schema definitions
 	CSchemas* pSchemas = Schemas;
@@ -75,7 +75,10 @@ long CProject::CreateStationList
 	}
 
 	// start with record 0
-	long lRecord = 0;
+	ULONG ulRecord = 0;
+	
+	// flag to indicate the data is already cached
+	bool bCache = false;
 
 	// loop through all of the stations
 	for ( auto& station : stations.Items )
@@ -83,6 +86,9 @@ long CProject::CreateStationList
 		shared_ptr<CClimateStation>& pStation = station.second;
 		if ( pStation == nullptr )
 		{
+			// flag the problem if it happens
+			CHelper::ErrorMessage( __FILE__, __LINE__ );
+			ASSERT( FALSE );
 			continue;
 		}
 
@@ -97,18 +103,37 @@ long CProject::CreateStationList
 			shared_ptr<CStream>& pStream = streams.find( csStream );
 			if ( pStream == nullptr )
 			{
+				// flag the problem if it happens
+				CHelper::ErrorMessage( __FILE__, __LINE__ );
+				ASSERT( FALSE );
 				continue;
 			}
 
+			// test the cache to see if the data has already been read
+			CStreamCache* pCache = pStream->Cache;
+			const ULONG ulLevels = pCache->Levels;
+			bCache = ulLevels > 0;
+
+			// if the data is already cached, break out of the loop
+			if ( bCache )
+			{
+				// the return value is the number of levels in the cache
+				pValue->Records = ulLevels;
+				break;
+			}
+
 			// write the value to the correct file
-			const bool bOpen = pStream->File->m_hFile != CFile::hFileNull;
+			const bool bOpen = pStream->IsOpen;
 			if ( !bOpen )
 			{
+				// flag the problem if it happens
+				CHelper::ErrorMessage( __FILE__, __LINE__ );
+				ASSERT( FALSE );
 				continue;
 			}
 
 			// get a pointer to the stream's file
-			shared_ptr<CFile>& pFile = pStream->File;
+			CFile* pFile = pStream->File;
 
 			vector<byte> buffer( usRecordSize, 0 );
 			byte* pBuf = &buffer[ 0 ];
@@ -171,11 +196,34 @@ long CProject::CreateStationList
 				::memcpy( pBuf, pSource, usRecordSize );
 			}
 
-			pStream->Value[ lRecord ][ 0 ] = pBuf;
+			pStream->Value[ ulRecord ][ 0 ] = pBuf;
 		}
 
-		lRecord++;
-		pValue->Records = lRecord;
+		// if bCache, break out of this loop, we are done
+		if ( bCache )
+		{
+			break;
+		}
+
+		ulRecord++;
+		pValue->Records = ulRecord;
+	}
+
+	// if the data is not cache, cache it now
+	if ( !bCache )
+	{
+		// cache the file in the streams 
+		for ( auto& stream : streams.Items )
+		{
+			const bool bOkay =
+				stream.second->ReadIntoCache( 0, ulRecord - 1 );
+			if ( !bOkay )
+			{
+				// flag the problem if it happens
+				CHelper::ErrorMessage( __FILE__, __LINE__ );
+				ASSERT( FALSE );
+			}
+		}
 	}
 
 	return value;

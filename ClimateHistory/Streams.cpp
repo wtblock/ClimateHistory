@@ -11,7 +11,7 @@ CStreams::CStreams
 ( 
 	CSchemas* pDataSchema,
 	CString csSchema, CString csRoot, CString csVersion, CString csGroup
-) : m_lRecords( 0 )
+) : m_ulRecords( 0 )
 {
 	USES_CONVERSION;
 
@@ -70,6 +70,7 @@ CStreams::CStreams
 		pStream->Pathname = csPath;
 		pStream->Name = csStream;
 		pStream->SchemaStream = pSchemaStream;
+		pStream->Null = pSchemaStream->Null;
 		pStream->Host = this;
 
 		//// open/create the stream's file

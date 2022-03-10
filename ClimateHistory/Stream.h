@@ -46,7 +46,7 @@ protected:
 	// pathname of the stream
 	CString m_csPathname;
 	// streams are implemented as files
-	shared_ptr<CFile> m_pFile;
+	CFile* m_pFile;
 	// name
 	CString m_csName;
 	// Variant type
@@ -152,23 +152,27 @@ public:
 		CString Pathname;
 
 	// streams are implemented as files
-	inline shared_ptr<CFile>& GetFile()
+	inline CFile* GetFile()
 	{
 		return m_pFile;
 	}
 	// streams are implemented as files
-	inline void SetFile( shared_ptr<CFile> value )
+	inline void SetFile( CFile* value )
 	{
 		m_pFile = value;
 	}
 	// streams are implemented as files
 	__declspec( property( get = GetFile, put = SetFile ) )
-		shared_ptr<CFile> File;
+		CFile* File;
 
 	// is the file open
 	inline bool GetIsOpen()
 	{
-		const bool value = File->m_hFile != CFile::hFileNull;
+		CFile* pFile = File;
+		const bool value = 
+			pFile != nullptr && 
+			pFile->m_hFile != CFile::hFileNull;
+
 		return value;
 	}
 	// is the file open
@@ -226,7 +230,7 @@ public:
 		VARENUM eType = Type;
 		switch ( eType )
 		{
-			case VT_I1:
+			case VT_I1: 
 			case VT_UI1: value = 1; break;
 			case VT_I2:
 			case VT_UI2: value = 2; break;
@@ -235,12 +239,12 @@ public:
 			case VT_R4:  value = 4; break;
 			case VT_I8:
 			case VT_UI8:
-			case VT_R8:  value = 8; break;
-				// a string is a special case, where the array of characters
-				// is returned as a single value instead of returning a
-				// single character of the array. An actual array of 
-				// characters should use VT_I1 or VT_UI1 instead.
-			case VT_BSTR:value = Size;
+			case VT_R8:  value = 8;
+			default : // unsupported type
+			{
+				CHelper::ErrorMessage( __FILE__, __LINE__ );
+				return value;
+			}
 		}
 
 		// persist the value
@@ -419,12 +423,6 @@ public:
 		const ULONG ulRecordSize = Size;
 		const USHORT usValueSize = ValueSize;
 		VARENUM eType = Type;
-
-		// there are no arrays of strings
-		if ( eType == VT_BSTR )
-		{
-			item = 0;
-		}
 
 		// offset into the file in bytes
 		const ULONG value = record * ulRecordSize + item * usValueSize;

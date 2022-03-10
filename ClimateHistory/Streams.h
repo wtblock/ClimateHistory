@@ -59,7 +59,7 @@ protected:
 	CString m_csPathName;
 
 	// number of records in each stream of the collection
-	long m_lRecords;
+	ULONG m_ulRecords;
 
 // public properties
 public:
@@ -191,23 +191,23 @@ public:
 		CString PathName;
 
 	// number of records in a the streams
-	inline long GetRecords()
+	inline ULONG GetRecords()
 	{
-		return m_lRecords;
+		return m_ulRecords;
 	}
 	// number of records in a the streams
-	inline void SetRecords( long value )
+	inline void SetRecords( ULONG value )
 	{
-		m_lRecords = value;
+		m_ulRecords = value;
 	}
 	// number of records in a the streams
 	__declspec( property( get = GetRecords, put = SetRecords ) )
-		long Records;
+		ULONG Records;
 
 	// is the value a valid record
-	inline bool GetValidRecord( long value )
+	inline bool GetValidRecord( ULONG value )
 	{
-		return value >= 0 && value < Records;
+		return value < Records;
 	}
 	// is the value a valid record
 	__declspec( property( get = GetValidRecord ) )

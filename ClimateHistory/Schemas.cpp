@@ -313,6 +313,10 @@ bool CSchemas::OpenSchemas( LPCTSTR path )
 								(
 									_T( "Type" ), mapAttributes 
 								);
+								const CString csNull = GetXmlAttribute
+								(
+									_T( "Null" ), mapAttributes 
+								);
 								const CString csSize = GetXmlAttribute
 								(
 									_T( "Size" ), mapAttributes 
@@ -451,6 +455,11 @@ bool CSchemas::OpenSchemas( LPCTSTR path )
 								if ( !csType.IsEmpty() )
 								{
 									pStream->Type = eEnum;
+								}
+								if ( !csNull.IsEmpty() )
+								{
+									const double dNull = _tstof( csNull );
+									pStream->Null = dNull;
 								}
 								if ( !csSize.IsEmpty() )
 								{

@@ -18,11 +18,17 @@ CStream::CStream()
 	Entry = eeFree;
 	Additive = 0;
 	Multiplier = 1;
+	File = nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 CStream::~CStream()
 {
+	CFile* pFile = File;
+	if ( pFile != nullptr )
+	{
+		delete pFile;
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -34,25 +40,33 @@ bool CStream::Open
 )
 {
 	bool value = false;
+	bool bCreate = false;
+	ULONG ulLevels = 0;
 	Pathname = csPath;
 	SchemaStream = pSchemaStream;
 	Name = csName;
-	shared_ptr<CStream> pStream = shared_ptr<CStream>( new CStream );
-	pStream->Name = csName;
-	shared_ptr<CFile> pFile = shared_ptr<CFile>( new CFile );
 
+	Name = csName;
+	CFile* pFile = File;
+	if ( pFile == nullptr )
+	{
+		pFile = new CFile;
+	}
+
+	// we are either opening an existing file or creating it
 	if ( ::PathFileExists( csPath ) )
 	{
 		// open an existing file
 		value = pFile->Open
 		( 
-			csPath, CFile::modeReadWrite | 
-			CFile::shareDenyNone
+			csPath, 
+			CFile::modeReadWrite | CFile::shareDenyNone
 		);
 	}
 	else
 	{
 		// create the file
+		bCreate = true;
 		value = pFile->Open
 		(
 			csPath,
@@ -73,8 +87,14 @@ bool CStream::Open
 		Entry = (ENUM_ENTRY)pSchemaStream->Entry;
 		Enumeration = pSchemaStream->Enumeration;
 		PropertyGroup = pSchemaStream->PropertyGroup;
+		const ULONG ulLevelValues = LevelValues;
 		File = pFile;
-
+		const ULONG ulLevels = Levels;
+		Cache->Create( Null, Type, ulLevelValues, ulLevels );
+		if ( !bCreate )
+		{
+			ReadIntoCache( 0, ulLevels - 1 );
+		}
 	}
 
 	return value;
@@ -135,9 +155,18 @@ void CStream::SetValue( ULONG record, USHORT item, byte* value )
 	// I am a pessimist 
 	bool bOkay = false;
 
-	const USHORT usRecordSize = Size;
-	const USHORT usValueSize = ValueSize;
+	// special handling for strings which are stored as VT_I1
+	// (character) so the value size is not 1 but the record
+	// size instead
 	VARENUM eType = Type;
+	const USHORT usRecordSize = Size;
+	USHORT usValueSize = ValueSize;
+	if ( VT_I1 == eType )
+	{
+		// read the whole record instead of a single character
+		item = 0;
+		usValueSize = usRecordSize;
+	}
 
 	// offset into the file in bytes
 	const ULONG ulOffset = Offset[ record ][ item ];
@@ -226,7 +255,6 @@ COleVariant CStream::GetVariant( ULONG record, USHORT item )
 			{
 				var = (float)Null;
 				Variant[ record ][ item ] = var;
-
 			}
 			else
 			{
@@ -262,7 +290,14 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 
 	const USHORT usRecordSize = Size;
 	const USHORT usValueSize = ValueSize;
-	VARENUM eType = Type;
+
+	if ( usValueSize == 0 )
+	{
+		// flag the problem if it happens
+		CHelper::ErrorMessage( __FILE__, __LINE__ );
+
+		return; // not supported
+	}
 
 	// offset into the file in bytes
 	const ULONG ulOffset = Offset[ record ][ item ];
@@ -288,16 +323,25 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 	
 	// type compatibility?
 	const VARENUM eVt = Type;
-	if ( value.vt != eVt )
+
+	// a string can be written into an array of characters
+	const bool bStringCase = eVt == VT_I2 && value.vt == VT_BSTR;
+
+	// handle string case
+	if ( bStringCase )
 	{
-		if ( usValueSize == 0 )
+		// a string is treated as a single value
+		// so not allowing an offset into the array
+		if ( item != 0 )
 		{
 			// flag the problem if it happens
 			CHelper::ErrorMessage( __FILE__, __LINE__ );
 
-			return; // not supported
+			return;
 		}
-
+	}
+	else if ( value.vt != eVt )
+	{
 		value.ChangeType( eVt );
 	}
 
@@ -313,7 +357,21 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 	// assign the variant based on type
 	switch ( eVt )
 	{
-		case VT_I1: ::memcpy( pBuf, &value.cVal, usValueSize ); break;
+		case VT_I1:
+		{
+			// an array of characters is treated as a single
+			// string value
+			if ( bStringCase )
+			{
+				CString csValue( value.bstrVal );
+				::memcpy( pBuf, csValue.GetBuffer(), usRecordSize );
+			}
+			else // single character
+			{
+				::memcpy( pBuf, &value.cVal, usValueSize );
+			}
+			break;
+		}
 		case VT_UI1: ::memcpy( pBuf, &value.bVal, usValueSize ); break;
 		case VT_I2: ::memcpy( pBuf, &value.iVal, usValueSize ); break;
 		case VT_UI2: ::memcpy( pBuf, &value.uiVal, usValueSize ); break;
@@ -323,12 +381,6 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 		case VT_UI8: ::memcpy( pBuf, &value.ullVal, usValueSize ); break;
 		case VT_R4: ::memcpy( pBuf, &value.fltVal, usValueSize ); break;
 		case VT_R8: ::memcpy( pBuf, &value.dblVal, usValueSize ); break;
-		case VT_BSTR:
-		{
-			CString csValue( value.bstrVal );
-			::memcpy( pBuf, csValue.GetBuffer(), usRecordSize );
-			break;
-		}
 		default :
 		{
 			bOkay = false;

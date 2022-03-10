@@ -106,8 +106,8 @@ public:
 	// folder
 	bool ReadDataSchema( const CString& csExe );
 
-	// create the station list
-	long CreateStationList
+	// create the station list and return the number of stations
+	ULONG CreateStationList
 	(
 		CKeyedCollection<CString, CClimateStation>& stations
 	);

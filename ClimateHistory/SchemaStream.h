@@ -63,6 +63,8 @@ protected:
 	CString m_csEnumeration;
 	// name used to collect properties in a property sheet
 	CString m_csPropertyGroup;
+	// empty values are referred to as null
+	double m_dNull;
 
 // public properties
 public:
@@ -191,6 +193,20 @@ public:
 	__declspec( property( get = GetPropertyGroup, put = SetPropertyGroup ) )
 		CString PropertyGroup;
 
+	// empty values are referred to as null
+	inline double GetNull()
+	{
+		return m_dNull;
+	}
+	// empty values are referred to as null
+	inline void SetNull( double value )
+	{
+		m_dNull = value;
+	}
+	// empty values are referred to as null
+	__declspec( property( get = GetNull, put = SetNull ) )
+		double Null;
+
 // public methods
 public:
 
@@ -204,6 +220,7 @@ public:
 		Type = VT_EMPTY;
 		Size = 0;
 		Entry = eeFree;
+		Null = 0;
 	}
 	virtual ~CSchemaStream()
 	{

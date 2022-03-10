@@ -428,7 +428,6 @@ int _tmain( int argc, TCHAR* argv[], TCHAR* envp[] )
 		{
 			shared_ptr<CProject> pProject = shared_ptr<CProject>( new CProject );
 
-
 			pProject->WorkingFolder = csPath;
 
 			// there should only be one reference count at this point
