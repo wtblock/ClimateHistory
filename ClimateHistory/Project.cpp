@@ -27,11 +27,41 @@ bool CProject::ReadDataSchema( const CString& csExe )
 } // ReadDataSchema
 
 /////////////////////////////////////////////////////////////////////////////
+// read the station data into the stations collection from the original
+// USHCN text file: "ushcn-v2.5-stations.txt"
+bool CProject::ReadStationData()
+{
+	// the stations text file pathname
+	const CString csStationData = StationPath;
+
+	// open the stations text file
+	CStdioFile file;
+	const bool value =
+		file.Open
+		( 
+			csStationData, CFile::modeRead | CFile::shareDenyNone 
+		);
+
+	// if the open was successful, read each line of the file and 
+	// collect the station data
+	if ( value == true )
+	{
+		CString csLine;
+		while ( file.ReadString( csLine ) )
+		{
+			shared_ptr<CClimateStation> pStation =
+				shared_ptr<CClimateStation>( new CClimateStation( csLine ) );
+			const CString csKey = pStation->Station;
+			m_Stations.add( csKey, pStation );
+		}
+	}
+
+	return value;
+} // ReadStationData
+
+/////////////////////////////////////////////////////////////////////////////
 // create the station list
-ULONG CProject::CreateStationList
-( 
-	CKeyedCollection<CString, CClimateStation>& stations 
-)
+ULONG CProject::CreateStationList()
 {
 	ULONG value = 0;
 
@@ -56,8 +86,20 @@ ULONG CProject::CreateStationList
 	// a collection of CStreams for the station list
 	shared_ptr<CStreams> pValue = shared_ptr<CStreams>
 	( 
-		new CStreams( Schemas, csCollectionName, WorkingFolder )
+		new CStreams()
 	);
+
+	// ask the collection to create its folder and streams
+	bool bPreexist = 
+		pValue->CreateStreams( Schemas, csCollectionName, WorkingFolder );
+
+	// if the collection did not preexist, we need to read the source
+	// text files so we can populate the streams
+	bool bStations = 0;
+	if ( !bPreexist )
+	{
+		bStations = ReadStationData();
+	}
 
 	// number of stream in station list collection
 	value = pValue->Streams.Count;
@@ -68,20 +110,55 @@ ULONG CProject::CreateStationList
 	// collection of data streams
 	CKeyedCollection<CString, CStream>& streams = pValue->Streams;
 	
+	// number of records in the files
+	ULONG ulRecords = 0;
+	bool bFirst = true;
+	bool bConsistent = true;
+	
 	// open and/or create the file in the streams 
 	for ( auto& stream : streams.Items )
 	{
 		stream.second->Open();
+
+		// do a consistency test to verify all streams have
+		// the same number of levels
+		const ULONG ulLevels = stream.second->Levels;
+		if ( bPreexist )
+		{
+			// all of the levels should be the same
+			if ( ulLevels != ulRecords )
+			{
+				// initialize on the first file
+				if ( bFirst )
+				{
+					ulRecords = ulLevels;
+					bFirst = false;
+				}
+				else // error
+				{
+					CHelper::ErrorMessage( __FILE__, __LINE__ );
+					bConsistent = false;
+				}
+			}
+		}
+	}
+
+	// if the collection did not preexist, we need to read the source
+	// text files so we can populate the streams
+	if ( !bConsistent )
+	{
+		const bool bStations = ReadStationData();
+		bPreexist = false;
 	}
 
 	// start with record 0
-	ULONG ulRecord = 0;
+	ULONG ulRecord = bPreexist ? ulRecords : 0;
 	
 	// flag to indicate the data is already cached
-	bool bCache = false;
+	bool bCached = bPreexist ? true : false;
 
 	// loop through all of the stations
-	for ( auto& station : stations.Items )
+	for ( auto& station : m_Stations.Items )
 	{
 		shared_ptr<CClimateStation>& pStation = station.second;
 		if ( pStation == nullptr )
@@ -112,15 +189,6 @@ ULONG CProject::CreateStationList
 			// test the cache to see if the data has already been read
 			CStreamCache* pCache = pStream->Cache;
 			const ULONG ulLevels = pCache->Levels;
-			bCache = ulLevels > 0;
-
-			// if the data is already cached, break out of the loop
-			if ( bCache )
-			{
-				// the return value is the number of levels in the cache
-				pValue->Records = ulLevels;
-				break;
-			}
 
 			// write the value to the correct file
 			const bool bOpen = pStream->IsOpen;
@@ -199,18 +267,12 @@ ULONG CProject::CreateStationList
 			pStream->Value[ ulRecord ][ 0 ] = pBuf;
 		}
 
-		// if bCache, break out of this loop, we are done
-		if ( bCache )
-		{
-			break;
-		}
-
 		ulRecord++;
 		pValue->Records = ulRecord;
 	}
 
-	// if the data is not cache, cache it now
-	if ( !bCache )
+	// if the data is not cached, cache it now
+	if ( !bCached )
 	{
 		// cache the file in the streams 
 		for ( auto& stream : streams.Items )

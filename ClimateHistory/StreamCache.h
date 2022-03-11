@@ -384,6 +384,15 @@ public:
 		ULONG ulElement = 0 
 	)
 	{
+		// special handling for strings which are defined
+		// as an array of characters (VT_I1)
+		const VARENUM eVt = Type;
+		if ( eVt == VT_I1 )
+		{
+			// for element to zero because the entire array
+			// is considered as a single value
+			ulElement = 0;
+		}
 		const ULONG ulLevelElements = LevelElements;
 		const ULONG ulIndex = 
 			ulLevelElements * ulLevel + ulElement;

@@ -230,6 +230,8 @@ public:
 		VARENUM eType = Type;
 		switch ( eType )
 		{
+			// special case handled as an array of characters 
+			// where a value is the record size
 			case VT_I1: 
 			case VT_UI1: value = 1; break;
 			case VT_I2:

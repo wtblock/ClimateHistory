@@ -163,9 +163,7 @@ void CStream::SetValue( ULONG record, USHORT item, byte* value )
 	USHORT usValueSize = ValueSize;
 	if ( VT_I1 == eType )
 	{
-		// read the whole record instead of a single character
 		item = 0;
-		usValueSize = usRecordSize;
 	}
 
 	// offset into the file in bytes
@@ -212,6 +210,15 @@ COleVariant CStream::GetVariant( ULONG record, USHORT item )
 	// return value
 	COleVariant var;
 
+	const VARENUM eVt = Type;
+
+	// VT_I1 is treated like an array of characters with
+	// a single value
+	if ( eVt == VT_I1 )
+	{
+		item = 0;
+	}
+
 	const ULONG ulFileSize = FileSize;
 	const ULONG ulOffset = Offset[ record ][ item ];
 	if ( ulFileSize <= ulOffset )
@@ -222,13 +229,13 @@ COleVariant CStream::GetVariant( ULONG record, USHORT item )
 	const USHORT usSizeValue = ValueSize;
 	byte* pBuf = Value[ record ][ item ];
 
-	const VARENUM eVt = Type;
 	switch ( eVt )
 	{
 		case VT_I1: 
 		{
-			var = *pBuf;
-			var.ChangeType( eVt );
+			COleSafeArray sa;
+			sa.CreateOneDim( eVt, usSizeValue, pBuf );
+			::VariantCopy( &var, &sa );
 			break;
 		}
 		case VT_UI1: var = *pBuf; break;
@@ -427,12 +434,12 @@ bool CStream::ReadIntoCache
 	const ULONG ulRecords = ulLastLevel - ulFirstLevel + 1;
 	const double dNull = Null;
 	const VARENUM eType = Type;
-	const ULONG ulElements = LevelValues;
+	const ULONG ulValues = LevelValues;
 	//const CString csUnits = Units;
 
 	// create the stream cache to contain our data as it is defined
 	// and allocate the space
-	Cache->Create( dNull, eType, ulElements, ulRecords );
+	Cache->Create( dNull, eType, ulValues, ulRecords );
 
 	// ask the stream cache how many bytes to read
 	const ULONG ulBytes = Cache->NumberOfBytes;

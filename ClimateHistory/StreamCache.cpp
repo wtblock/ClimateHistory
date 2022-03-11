@@ -498,6 +498,7 @@ void CStreamCache::SetValue( ULONG ulIndex, COleVariant var )
 	{
 		return; // out of range
 	}
+
 	// type compatibility?
 	const VARENUM eVt = Type;
 	if ( var.vt != eVt )
@@ -542,9 +543,13 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 	variant.vt = eVt;
 	switch ( eVt )
 	{
-		case VT_I1: // not handled by COleVariant directly
+		// handled as an array of characters for string behavior
+		case VT_I1:
 		{
-			variant.ulVal = m_StreamChars[ ulIndex ];
+			COleSafeArray sa;
+			void* pBuf = &m_StreamChars[ ulIndex ];
+			sa.CreateOneDim( eVt, ulValues, pBuf );
+			::VariantCopy( &variant, &sa );
 			var = variant;
 			break;
 		}
@@ -594,6 +599,9 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 			break;
 		}
 	}
+
+	::VariantClear( &variant );
+
 	return var;
 } // GetValue 
 

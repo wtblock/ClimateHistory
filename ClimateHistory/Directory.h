@@ -8,7 +8,7 @@
 using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////
-// CDirectory 
+// the directory itemizes the properties of all the streams in the project 
 class CDirectory
 {
 // public definitions

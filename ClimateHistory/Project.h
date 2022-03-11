@@ -20,14 +20,23 @@ protected:
 	// the working folder of the project
 	CString m_csWorkingFolder;
 
+	// the path to the station data text file
+	CString m_csStationPath;
+
 	// the schema definitions in the project
 	CSchemas m_Schemas;
 
 	// the schema definitions in the project
 	CString m_csSettings;
 
+	// rapid station lookup of climate stations
+	CKeyedCollection<CString, CClimateStation> m_Stations;
+
 	// list of the known stations
 	shared_ptr<CStreams> m_spStationList;
+
+	// station key
+	CString m_csStationKey;
 
 // public properties
 public:
@@ -59,6 +68,20 @@ public:
 	__declspec( property( get = GetWorkingFolder, put = SetWorkingFolder ) )
 		CString WorkingFolder;
 
+	// the path to the station data text file
+	inline CString GetStationPath()
+	{
+		return m_csStationPath;
+	}
+	// the path to the station data text file
+	inline void SetStationPath( CString value )
+	{
+		m_csStationPath = value;
+	}
+	// the path to the station data text file
+	__declspec( property( get = GetStationPath, put = SetStationPath ) )
+		CString StationPath;
+
 	// pathname of the application settings files
 	inline CString GetSettings()
 	{
@@ -72,6 +95,20 @@ public:
 	// pathname of the application settings files
 	__declspec( property( get = GetSettings, put = SetSettings  ) )
 		CString Settings;
+
+	// station key
+	inline CString GetStationKey()
+	{
+		return m_csStationKey;
+	}
+	// station key
+	inline void SetStationKey( CString value )
+	{
+		m_csStationKey = value;
+	}
+	// station key
+	__declspec( property( get = GetStationKey, put = SetStationKey  ) )
+		CString StationKey;
 
 	// the schema definitions in the project
 	inline CSchemas* GetSchemas()
@@ -106,11 +143,12 @@ public:
 	// folder
 	bool ReadDataSchema( const CString& csExe );
 
+	// read the station data into the stations collection from the original
+	// USHCN text file "ushcn-v2.5-stations.txt" 
+	bool CProject::ReadStationData();
+
 	// create the station list and return the number of stations
-	ULONG CreateStationList
-	(
-		CKeyedCollection<CString, CClimateStation>& stations
-	);
+	ULONG CreateStationList();
 
 // protected overrides
 protected:

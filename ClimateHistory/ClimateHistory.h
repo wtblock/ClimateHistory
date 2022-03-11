@@ -16,9 +16,6 @@ using namespace std;
 typedef pair<CString,float> YEAR_VALUE;
 typedef pair<CString, vector<CStationYear::GREATER_COUNT> > CLIMATE_COUNT;
 
-// rapid station lookup of climate stations
-CKeyedCollection<CString, CClimateStation> m_Stations;
-
 // rapid climate year lookup
 CKeyedCollection<CString, CClimateYear> m_ClimateYears;
 

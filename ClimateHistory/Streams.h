@@ -27,7 +27,7 @@ using namespace std;
 //				ungrouped), version folder (if versioned and ungrouped), or 
 //				group folder (if versioned and grouped)
 //					Tabular data is stored in folders containing streams 
-//						representing columns of the table
+//						representing columns of the streams
 //					Telemetry data is stored like tables with the only limitation 
 //						being the streams are all numerical
 class CStreams
@@ -60,6 +60,26 @@ protected:
 
 	// number of records in each stream of the collection
 	ULONG m_ulRecords;
+
+	// globally unique identifier of a single record
+	CString m_csUniqueID;
+
+	// key stream names used to identify a specific record
+	// primary, secondary, ... keys
+	vector<CString> m_KeyStreams;
+
+	// the keys associated with a level of data
+	vector<CString> m_KeyValues;
+
+	// an index key built from the key values above
+	CString m_csKey;
+
+	// flag to indicate the collection preexisted in order
+	// to prevent re-parsing the source files
+	bool m_bPreexist;
+
+	// index of the streams based on key streams
+	CKeyedCollection<CString, ULONG> m_KeyIndex;
 
 // public properties
 public:
@@ -204,6 +224,20 @@ public:
 	__declspec( property( get = GetRecords, put = SetRecords ) )
 		ULONG Records;
 
+	// flag to indicate the collection preexisted
+	inline bool GetPreexist()
+	{
+		return m_bPreexist;
+	}
+	// flag to indicate the collection preexisted
+	inline void SetPreexist( bool value )
+	{
+		m_bPreexist = value;
+	}
+	// flag to indicate the collection preexisted
+	__declspec( property( get = GetPreexist, put = SetPreexist ) )
+		bool Preexist;
+
 	// is the value a valid record
 	inline bool GetValidRecord( ULONG value )
 	{
@@ -214,15 +248,20 @@ public:
 		bool ValidRecord[];
 
 	// all record numbers
-	inline vector<long> GetAllRecordNumbers()
+	inline vector<ULONG> GetAllRecordNumbers()
 	{
-		vector<long> value;
-		
+		const ULONG records = Records;
+		ULONG record = 0;
+		vector<ULONG> value( records, 0 );
+		for ( auto& node : value )
+		{
+			node = record++;
+		}
 		return value;
 	}
 	// all record numbers
 	__declspec( property( get = GetAllRecordNumbers ) )
-		vector<long> AllRecordNumbers;
+		vector<ULONG> AllRecordNumbers;
 
 	// get queried records
 	inline vector<long> GetRecordNumbers( LPCTSTR query )
@@ -236,60 +275,240 @@ public:
 		vector<long> RecordNumbers[];
 
 	// all record GUIDS
-	inline long GetAllRecordGUIDs( CKeyedCollection<CString,long>& mapGUIDs )
+	inline long GetAllRecordGUIDs( CKeyedCollection<CString,ULONG>& mapGUIDs )
 	{
-		vector<long> arrRecords = AllRecordNumbers;
-		const long lRecords = (long)arrRecords.size();
-		//for ( long lRecord : arrRecords )
-		//{
-		//	const CString csGUID = UniqueID[ lRecord ];
-		//	if ( mapGUIDs.exists( csGUID ) )
-		//	{
-		//		continue;
-		//	}
-		//	shared_ptr<long> pGUIDS = shared_ptr<long>( new long( lRecord ));
-		//	mapGUIDs.add( csGUID, pGUIDS );
-		//}
+		vector<ULONG> arrRecords = AllRecordNumbers;
+		const ULONG ulRecords = (ULONG)arrRecords.size();
+		for ( ULONG ulRecord : arrRecords )
+		{
+			const CString csGUID = UniqueID[ ulRecord ];
+			if ( mapGUIDs.exists( csGUID ) )
+			{
+				continue;
+			}
+			shared_ptr<ULONG> pGUIDS = shared_ptr<ULONG>
+			( 
+				new ULONG( ulRecord )
+			);
+			mapGUIDs.add( csGUID, pGUIDS );
+		}
 
 		// this will not match if there are duplicate GUIDs which is 
 		// an error condition
-		const long value = mapGUIDs.Count;
-		ASSERT( lRecords == value );
+		const ULONG value = (ULONG)mapGUIDs.Count;
+		ASSERT( ulRecords == value );
 
 		return value;
 	}
 
-	// collection string property
-	inline CString GetString( long record, LPCTSTR stream )
-	{
-		CString value;
-		shared_ptr<CStream>& pStream = Streams.find( stream );
-		if ( pStream != nullptr )
-		{
-			VARENUM vt = pStream->Type;
-			if ( vt == VT_BSTR )
-			{
-				const USHORT usSize = pStream->Size;
-				vector<char> buffer = vector<char>( usSize, 0 );
-				LPSTR pBuf = &buffer[ 0 ];
-				pBuf = (LPSTR)pStream->Value[ record ][ 0 ];
-				value = pBuf;
-			}
-		}
-
-		return value;
-	}
-	// collection string property
-	void SetString( long record, LPCTSTR stream, LPCTSTR value );
-	// table string property
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1
+	inline CString GetString( ULONG record, LPCTSTR stream );
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1
+	void SetString( ULONG record, LPCTSTR stream, LPCTSTR value );
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1
 	__declspec( property( get = GetString, put = SetString ) )
 		CString String[][];
 
+// protected index properties
+protected:
+	// globally unique identifier of a single record
+	inline CString GetUniqueID( ULONG record )
+	{
+		shared_ptr<CStream>& pStream = Streams.find( _T( "GUID" ));
+		if ( pStream != nullptr )
+		{
+		}
+		CString value;
+		//m_table.Read( _T( "GUID" ), record, value );
+		return value;
+	}
+	// globally unique identifier of a single record
+	inline void SetUniqueID( ULONG record, CString value )
+	{
+		//m_table.Write( _T( "GUID" ), record, value );
+	}
+	// globally unique identifier of a single record
+	__declspec( property( get = GetUniqueID, put = SetUniqueID ) )
+		CString UniqueID[];
+
+	// index of the streams based on key streams
+	inline CKeyedCollection<CString,ULONG>& GetKeyIndex()
+	{
+		return m_KeyIndex;
+	}
+	// index of the streams based on key streams
+	__declspec( property( get = GetKeyIndex ) )
+		CKeyedCollection<CString,ULONG> KeyIndex;
+
+	// key stream index count
+	inline int GetIndexCount()
+	{
+		return KeyIndex.Count;
+	}
+	// key stream index count
+	__declspec( property( get = GetIndexCount ) )
+		int IndexCount;
+
+	// streams is indexed by key streams
+	inline bool GetIndexed()
+	{
+		const int nValues = IndexCount;
+		return nValues > 0;
+	}
+	// streams is indexed by key streams
+	__declspec( property( get = GetIndexed ) )
+		bool Indexed;
+
+	// key stream names used to identify a specific record
+	// primary, secondary, ... keys
+	vector<CString>& GetKeyStreams();
+	// key stream names used to identify a specific record
+	// primary, secondary, ... keys
+	inline void SetKeyStreams( vector<CString> value )
+	{
+		m_KeyStreams = value;
+	}
+	// key stream names used to identify a specific record
+	// primary, secondary, ... keys
+	__declspec( property( get = GetKeyStreams, put = SetKeyStreams ) )
+		vector<CString> KeyStreams;
+
+	// get the key values for a given record number, return empty
+	// array on failure
+	inline vector<CString> GetKeyValues( ULONG record )
+	{
+		vector<CString> values;
+		bool bOkay = true;
+
+		// get the key streams, and if empty add the GUID stream
+		vector<CString> arrStreams = KeyStreams;
+		if ( arrStreams.empty() )
+		{
+			arrStreams.push_back( _T( "GUID" ) );
+		}
+
+		// read and append values for each key stream
+		for ( CString csStream : arrStreams )
+		{
+			CString csValue;
+			
+			shared_ptr<CStream>& pStream = Streams.find( csStream );
+			if ( pStream != nullptr )
+			{
+				CStreamCache* pCache = pStream->Cache;
+				const ULONG ulLevels = pCache->Levels;
+				if ( record < ulLevels )
+				{
+					LPSTR pBuf = (char*)pCache->GetData( record, 0 );
+					if ( pBuf != nullptr )
+					{
+						csValue = pBuf;
+						values.push_back( csValue );
+					}
+					else // if any of the keys are not available, abort
+					{
+						bOkay = false;
+						values.clear();
+						break;
+					}
+				}
+
+			}
+		}
+
+		// persist the value
+		KeyValues[ record ] = values;
+
+		return values;
+	}
+	// get the key value for a given record number, return empty
+	// array on failure
+	inline void SetKeyValues( ULONG /*record*/, vector<CString> value )
+	{
+		m_KeyValues = value;
+	}
+	// get the key value for a given record number, return empty
+	// array on failure
+	__declspec( property( get = GetKeyValues, put = SetKeyValues ) )
+		vector<CString> KeyValues[];
+
+	// get the key string for a given record and return 
+	// empty string on failure
+	inline CString GetKey( ULONG record )
+	{
+		vector<CString> values = KeyValues[ record ];
+		const CString value = MakeKey( values );
+
+		// persist the value
+		Key[ record ] = value;
+
+		return value;
+	}
+	// get the key string for a given record and return 
+	// empty string on failure
+	inline void SetKey( ULONG record, CString value )
+	{
+		m_csKey = value;
+	}
+	// get the key string for a given record and return 
+	// empty string on failure
+	__declspec( property( get = GetKey, put = SetKey ) )
+		CString Key[];
+
 // protected methods
 protected:
+	// index by key fields
+	inline void Index()
+	{
+		KeyIndex.clear();
+		const size_t nKeys = KeyStreams.size();
+		if ( nKeys == 0 )
+		{
+			return;
+		}
+		
+		for ( ULONG record = 0; record < Records; record++ )
+		{
+			const CString csKey = Key[ record ];
+			if ( !KeyIndex.exists( csKey ) )
+			{
+				shared_ptr<ULONG> pRecord = shared_ptr<ULONG>
+				( 
+					new ULONG( record )
+				);
+				KeyIndex.add( csKey, pRecord );
+			}
+		}
+	}
 
 // public methods
 public:
+	// create the collection's steams and return true if they 
+	// already exist
+	bool CreateStreams
+	(
+		CSchemas* pDataSchema,
+		CString csSchema, CString csRoot,
+		CString csVersion = _T( "" ), CString csGroup = _T( "" )
+	);
+
+	// make a key from an array of key values
+	static CString MakeKey( vector<CString> values )
+	{
+		CString csKey;
+		for ( CString csValue : values )
+		{
+			if ( !csKey.IsEmpty() )
+			{
+				csKey += _T( "\n" ); // line feed separator
+			}
+			csKey += csValue;
+		}
+		return csKey;
+	}
 
 // protected overrides
 protected:
@@ -303,19 +522,11 @@ public:
 	CStreams()
 	{
 		Records = 0;
+		DataSchema = nullptr;
 	}
-	// initialize constructor
-	CStreams
-	( 
-		CSchemas* pDataSchema,
-		CString csSchema, CString csRoot, 
-		CString csVersion = _T( "" ), CString csGroup = _T( "" )
-	);
-
 	// default destructor
 	virtual ~CStreams()
 	{
-		
 	}
 };
 

@@ -96,7 +96,7 @@
 		Name="StationList"
 		Description="Tabulation of all stations"
 		Schema="StationList"
-		IndexKeys="Name">
+		IndexKeys="Station">
 		<Stream Name="GUID" Type="VT_I1" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
 		<Stream Name="Station" Type="VT_I1" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
 		<Stream Name="Latitude" Type="VT_R4" Size="4" UnitCategory="Angle" Title="Latitude" Description="Latitude in degrees of angle" PropertyGroup="Coordinates" Entry="0" Enumeration=""/>
@@ -113,7 +113,7 @@
 	<Collection
 		Name="Station"
 		Description="List of data streams in this project"
-		Schema="Station"
+		Schema="Date,Station"
 		IndexKeys="Station">
 		<Stream Name="GUID" Type="VT_I1" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
 		<Stream Name="Station" Type="VT_I1" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
