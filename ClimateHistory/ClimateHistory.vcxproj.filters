@@ -78,10 +78,10 @@
     <ClInclude Include="SchemaStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stations.h">
+    <ClInclude Include="StreamCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StreamCache.h">
+    <ClInclude Include="ClimateStations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,10 +128,10 @@
     <ClCompile Include="SchemaStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Stations.cpp">
+    <ClCompile Include="StreamCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StreamCache.cpp">
+    <ClCompile Include="ClimateStations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

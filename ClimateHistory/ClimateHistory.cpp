@@ -397,19 +397,14 @@ int _tmain( int argc, TCHAR* argv[], TCHAR* envp[] )
 	// out of context before the program ends to prevent
 	// memory leaks
 	{
-		shared_ptr<CProject> pProject = 
-			shared_ptr<CProject>( new CProject );
-
-		pProject->WorkingFolder = csPath;
-		pProject->StationPath = csStationPath;
+		shared_ptr<CProject> pProject = shared_ptr<CProject>
+		(	
+			new CProject( csExe, csPath, csStationPath )
+		);
 
 		// there should only be one reference count at this point
 		const long lCount = pProject.use_count();
 
-		// the data schema controls how streams are created
-		const bool bReadSchema = pProject->ReadDataSchema( csExe );
-
-		const long lStreams = pProject->CreateStationList();
 	}
 
 //	// crawl through directory tree defined by the command line

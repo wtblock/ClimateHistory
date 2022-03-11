@@ -166,7 +166,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Schema.h" />
     <ClInclude Include="Schemas.h" />
-    <ClInclude Include="Stations.h" />
+    <ClInclude Include="ClimateStations.h" />
     <ClInclude Include="StationYear.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Stream.h" />
@@ -185,7 +185,7 @@
     <ClCompile Include="Schema.cpp" />
     <ClCompile Include="Schemas.cpp" />
     <ClCompile Include="SchemaStream.cpp" />
-    <ClCompile Include="Stations.cpp" />
+    <ClCompile Include="ClimateStations.cpp" />
     <ClCompile Include="StationYear.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -7,7 +7,7 @@
 #include "KeyedCollection.h"
 #include "Schemas.h"
 #include "Streams.h"
-#include "ClimateStation.h"
+#include "ClimateStations.h"
 
 /////////////////////////////////////////////////////////////////////////////
 class CProject
@@ -17,11 +17,11 @@ public:
 
 // protected data
 protected:
+	// the folder of this process
+	CString m_csExecutableFolder;
+
 	// the working folder of the project
 	CString m_csWorkingFolder;
-
-	// the path to the station data text file
-	CString m_csStationPath;
 
 	// the schema definitions in the project
 	CSchemas m_Schemas;
@@ -29,17 +29,28 @@ protected:
 	// the schema definitions in the project
 	CString m_csSettings;
 
-	// rapid station lookup of climate stations
-	CKeyedCollection<CString, CClimateStation> m_Stations;
+	// the path to the station data text file
+	CString m_csStationPath;
 
-	// list of the known stations
-	shared_ptr<CStreams> m_spStationList;
-
-	// station key
-	CString m_csStationKey;
+	// collection of climate stations
+	shared_ptr<CClimateStations> m_pClimateStations;
 
 // public properties
 public:
+	// the folder of this process
+	inline CString GetExecutableFolder()
+	{
+		return m_csExecutableFolder;
+	}
+	// the folder of this process
+	inline void SetExecutableFolder( CString value )
+	{
+		m_csExecutableFolder = value;
+	}
+	// the folder of this process
+	__declspec( property( get = GetExecutableFolder, put = SetExecutableFolder ) )
+		CString ExecutableFolder;
+
 	// the working folder of the project
 	inline CString GetWorkingFolder()
 	{
@@ -96,20 +107,6 @@ public:
 	__declspec( property( get = GetSettings, put = SetSettings  ) )
 		CString Settings;
 
-	// station key
-	inline CString GetStationKey()
-	{
-		return m_csStationKey;
-	}
-	// station key
-	inline void SetStationKey( CString value )
-	{
-		m_csStationKey = value;
-	}
-	// station key
-	__declspec( property( get = GetStationKey, put = SetStationKey  ) )
-		CString StationKey;
-
 	// the schema definitions in the project
 	inline CSchemas* GetSchemas()
 	{
@@ -118,20 +115,6 @@ public:
 	// the schema definitions in the project
 	__declspec( property( get = GetSchemas ) )
 		CSchemas* Schemas;
-
-	// pathname of the application settings files
-	inline shared_ptr<CStreams>& GetStationList()
-	{
-		return m_spStationList;
-	}
-	// pathname of the application settings files
-	inline void SetStationList( shared_ptr<CStreams> value )
-	{
-		m_spStationList = value;
-	}
-	// pathname of the application settings files
-	__declspec( property( get = GetStationList, put = SetStationList  ) )
-		shared_ptr<CStreams> StationList;
 
 // protected methods
 protected:
@@ -143,13 +126,6 @@ public:
 	// folder
 	bool ReadDataSchema( const CString& csExe );
 
-	// read the station data into the stations collection from the original
-	// USHCN text file "ushcn-v2.5-stations.txt" 
-	bool CProject::ReadStationData();
-
-	// create the station list and return the number of stations
-	ULONG CreateStationList();
-
 // protected overrides
 protected:
 
@@ -159,16 +135,31 @@ public:
 // public construction / destruction
 public:
 	// constructor
-	CProject()
+	CProject
+	( 
+		CString csExe, CString csWorkingFolder, CString csStationPath 
+	)
 	{
+		ExecutableFolder = csExe;
+		WorkingFolder = csWorkingFolder;
+		StationPath = csStationPath;
 
+		// the data schema controls how streams are created
+		const bool bReadSchema = ReadDataSchema( csExe );
+
+		// everything else depends on the schema being read
+		if ( bReadSchema )
+		{
+			m_pClimateStations = shared_ptr<CClimateStations>
+			(
+				new CClimateStations( this )
+			);
+		}
 	};
+
+	// destructor
 	virtual ~CProject()
 	{
-		const long lCount1 = m_spStationList.use_count();
-		m_spStationList.reset();
-		const long lCount2 = m_spStationList.use_count();
-
 		m_Schemas.nameClear();
 		m_Schemas.Schemas.clear();
 	};
