@@ -13,7 +13,7 @@ class CProject;
 /////////////////////////////////////////////////////////////////////////////
 // a collection of climate stations as defined by the 
 // U.S. Historical Climatology Network (USHCN)
-class CClimateStations
+class CClimateStations : public CStreams
 {
 // public definitions
 public:
@@ -29,8 +29,8 @@ protected:
 	// rapid station lookup of climate stations
 	CKeyedCollection<CString, CClimateStation> m_Stations;
 
-	// list of the known station streams
-	shared_ptr<CStreams> m_spStationList;
+	//// list of the known station streams
+	//shared_ptr<CStreams> m_spStationList;
 
 	// station key
 	CString m_csStationKey;
@@ -67,19 +67,19 @@ public:
 	__declspec( property( get = GetStationKey, put = SetStationKey  ) )
 		CString StationKey;
 
-	// list of the known station streams
-	inline shared_ptr<CStreams>& GetStationList()
-	{
-		return m_spStationList;
-	}
-	// list of the known station streams
-	inline void SetStationList( shared_ptr<CStreams> value )
-	{
-		m_spStationList = value;
-	}
-	// list of the known station streams
-	__declspec( property( get = GetStationList, put = SetStationList  ) )
-		shared_ptr<CStreams> StationList;
+	//// list of the known station streams
+	//inline shared_ptr<CStreams>& GetStationList()
+	//{
+	//	return m_spStationList;
+	//}
+	//// list of the known station streams
+	//inline void SetStationList( shared_ptr<CStreams> value )
+	//{
+	//	m_spStationList = value;
+	//}
+	//// list of the known station streams
+	//__declspec( property( get = GetStationList, put = SetStationList  ) )
+	//	shared_ptr<CStreams> StationList;
 
 // protected methods
 protected:
@@ -107,7 +107,7 @@ public:
 	// destructor
 	virtual ~CClimateStations()
 	{
-		m_spStationList.reset();
+		//m_spStationList.reset();
 	}
 };
 

@@ -98,7 +98,7 @@
 		Schema="StationList"
 		IndexKeys="Station">
 		<Stream Name="GUID" Type="VT_I1" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
-		<Stream Name="Station" Type="VT_I1" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
+		<Stream Name="Station" Type="VT_I1" Size="10" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" PropertyGroup="Identifiers" Entry="0" Enumeration=""/>
 		<Stream Name="Latitude" Type="VT_R4" Size="4" UnitCategory="Angle" Title="Latitude" Description="Latitude in degrees of angle" PropertyGroup="Coordinates" Entry="0" Enumeration=""/>
 		<Stream Name="Longitude" Type="VT_R4" Size="4" UnitCategory="Angle" Title="Longitude" Description="Longitude in degrees of angle" PropertyGroup="Coordinates" Entry="0" Enumeration=""/>
 		<Stream Name="Elevation" Null="-999.9" Type="VT_R4" Size="4" UnitCategory="Distance" Title="Elevation" Description="Elevation in meters" PropertyGroup="Elevation" Entry="0" Enumeration=""/>
@@ -107,7 +107,7 @@
 		<Stream Name="Component1" Type="VT_I1" Size="6" UnitCategory="" Title="Component 1" Description="Coop Id for the first station" PropertyGroup="Components" Entry="0" Enumeration=""/>
 		<Stream Name="Component2" Type="VT_I1" Size="6" UnitCategory="" Title="Component 2" Description="Coop Id for the second station" PropertyGroup="Components" Entry="0" Enumeration=""/>
 		<Stream Name="Component3" Type="VT_I1" Size="6" UnitCategory="" Title="Component 3" Description="Coop Id for the third station" PropertyGroup="Components" Entry="0" Enumeration=""/>
-		<Stream Name="OffsetUTC" Type="VT_I1" Size="1" UnitCategory="" Title="UTC Offset" Description="The time difference between Coordinated Universal Time( UTC )" PropertyGroup="UTC Offset" Entry="0" Enumeration=""/>
+		<Stream Name="OffsetUTC" Type="VT_I2" Size="2" UnitCategory="" Title="UTC Offset" Description="The time difference between Coordinated Universal Time( UTC )" PropertyGroup="UTC Offset" Entry="0" Enumeration=""/>
 		>
 	</Collection>
 	<Collection

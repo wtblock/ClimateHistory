@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Stream.h"
+
 // FORMAT OF "ushcn-v2.5-stations.txt"
 // 
 // ----------------------------------------
@@ -24,7 +26,7 @@
 // UTC OFFSET              94 - 95     Int
 
 // a class representing a single climate station
-class CClimateStation
+class CClimateStation : public CStream
 {
 // public definitions
 public:
@@ -33,6 +35,9 @@ public:
 protected:
 	// single line of stations text file
 	CString m_csSource;
+
+	// unique identifier for this stream
+	CString m_csGUID;
 
 	// station name (columns 1 - 11 of source)
 	CString m_csStation;
@@ -70,7 +75,7 @@ protected:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	CHAR m_nOffsetUTC;
+	short m_sOffsetUTC;
 
 // public properties
 public:
@@ -95,18 +100,41 @@ public:
 		const float fElevation = Elevation;
 		const CString csState = State;
 		const CString csLocation = Location;
-		const int nOffsetUTC = OffsetUTC;
+		const CString csComp1 = Component1;
+		const CString csComp2 = Component2;
+		const CString csComp3 = Component3;
+		const short sOffsetUTC = OffsetUTC;
 	}
 	// single line of stations text file
 	__declspec( property( get = GetSource, put = SetSource ) )
 		CString Source;
 
+	// unique identifier for this stream
+	inline CString GetGUID()
+	{
+		return m_csGUID;
+	}
+	// unique identifier for this stream
+	inline void SetGUID( CString value )
+	{
+		// persist the value
+		m_csGUID = value;
+	}
+	// unique identifier for this stream
+	__declspec( property( get = GetGUID, put = SetGUID ) )
+		CString GUID;
+
 	// station name (columns 1 - 11 of source)
 	inline CString GetStation()
 	{
-		// 11 characters starting at zero
-		const CString value = m_csSource.Mid( 0, 11 );
-		
+		CString value = m_csStation;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 10 characters starting at zero
+			value = m_csSource.Mid( 0, 10 );
+		}
+			
 		// persist the value
 		Station = value;
 
@@ -124,11 +152,17 @@ public:
 	// latitude in degrees
 	inline float GetLatitude()
 	{
-		// 8 characters starting at 12
-		const CString csValue = m_csSource.Mid( 12, 8 );
-		
 		// return value
-		const float value = (float)_tstof( csValue );
+		float value = m_fLatitude;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 8 characters starting at 12
+			const CString csValue = m_csSource.Mid( 12, 8 );
+
+			// return value
+			value = (float)_tstof( csValue );
+		}
 
 		// persist the value
 		Latitude = value;
@@ -147,11 +181,17 @@ public:
 	// longitude in degrees
 	inline float GetLongitude()
 	{
-		// 9 characters starting at 21
-		const CString csValue = m_csSource.Mid( 21, 9 );
-		
 		// return value
-		const float value = (float)_tstof( csValue );
+		float value = m_fLongitude;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 9 characters starting at 21
+			const CString csValue = m_csSource.Mid( 21, 9 );
+
+			// return value
+			value = (float)_tstof( csValue );
+		}
 
 		// persist the value
 		Longitude = value;
@@ -170,11 +210,17 @@ public:
 	// elevation in degrees
 	inline float GetElevation()
 	{
-		// 5 characters starting at 32
-		const CString csValue = m_csSource.Mid( 32, 5 );
-		
 		// return value
-		const float value = (float)_tstof( csValue );
+		float value = m_fElevation;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 5 characters starting at 32
+			const CString csValue = m_csSource.Mid( 32, 5 );
+
+			// return value
+			value = (float)_tstof( csValue );
+		}
 
 		// persist the value
 		Elevation = value;
@@ -193,9 +239,13 @@ public:
 	// two letter state code
 	inline CString GetState()
 	{
-		// 2 characters starting at 38
-		const CString value = m_csSource.Mid( 38, 2 );
+		CString value = m_csState;
 
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 2 characters starting at 38
+			value = m_csSource.Mid( 38, 2 );
+		}
 		// persist the value
 		State = value;
 
@@ -213,8 +263,13 @@ public:
 	// name of the station location
 	inline CString GetLocation()
 	{
-		// 30 characters starting at 41
-		const CString value = m_csSource.Mid( 41, 30 );
+		CString value = m_csLocation;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 30 characters starting at 41
+			value = m_csSource.Mid( 41, 30 );
+		}
 
 		// persist the value
 		Location = value;
@@ -235,8 +290,13 @@ public:
 	// series.  "------" indicates "not applicable".
 	inline CString GetComponent1()
 	{
-		// 6 characters starting at 72
-		const CString value = m_csSource.Mid( 72, 6 );
+		CString value = m_csComponent1;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 6 characters starting at 72
+			value = m_csSource.Mid( 72, 6 );
+		}
 
 		// persist the value
 		Component1 = value;
@@ -261,8 +321,13 @@ public:
 	// time series.
 	inline CString GetComponent2()
 	{
-		// 6 characters starting at 79
-		const CString value = m_csSource.Mid( 79, 6 );
+		CString value = m_csComponent2;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 6 characters starting at 79
+			value = m_csSource.Mid( 79, 6 );
+		}
 
 		// persist the value
 		Component2 = value;
@@ -287,8 +352,13 @@ public:
 	// time series.
 	inline CString GetComponent3()
 	{
-		// 6 characters starting at 86
-		const CString value = m_csSource.Mid( 86, 6 );
+		CString value = m_csComponent3;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 6 characters starting at 86
+			value = m_csSource.Mid( 86, 6 );
+		}
 
 		// persist the value
 		Component3 = value;
@@ -311,13 +381,19 @@ public:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	inline CHAR GetOffsetUTC()
+	inline short GetOffsetUTC()
 	{
-		// 2 characters starting at 93
-		const CString csValue = m_csSource.Mid( 93, 2 );
-		
 		// return value
-		const CHAR value = (CHAR)_tstol( csValue );
+		short value = m_sOffsetUTC;
+
+		if ( !m_csSource.IsEmpty() )
+		{
+			// 2 characters starting at 93
+			const CString csValue = m_csSource.Mid( 93, 2 );
+
+			// convert to a short
+			value = (short)_tstol( csValue );
+		}
 
 		// persist the value
 		OffsetUTC = value;
@@ -327,15 +403,15 @@ public:
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
-	inline void SetOffsetUTC( CHAR value )
+	inline void SetOffsetUTC( short value )
 	{
-		m_nOffsetUTC = value;
+		m_sOffsetUTC = value;
 	}
 	// UTC OFFSET is the time difference between Coordinated Universal Time( UTC )
 	// and local standard time at the station( i.e., the number of hours that
 	// must be added to local standard time to match UTC ).
 	__declspec( property( get = GetOffsetUTC, put = SetOffsetUTC ) )
-		CHAR OffsetUTC;
+		short OffsetUTC;
 	
 // protected methods
 protected:
@@ -351,10 +427,25 @@ public:
 
 // public constructor
 public:
+	// default constructor
+	CClimateStation()
+	{
+		const float fMissing = -999.9f;
+		Latitude =  fMissing;
+		Longitude = fMissing;
+		Elevation = fMissing;
+		OffsetUTC = 0;
+
+	}
+
+	// construct from lines of the "ushcn-v2.5-stations.txt" source
 	CClimateStation( LPCTSTR source )
 	{
 		Source = source;
+
 	}
+
+	// destructor
 	~CClimateStation()
 	{
 	}

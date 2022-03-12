@@ -66,7 +66,7 @@ bool CClimateStations::ReadStationData()
 		);
 
 	// if the open was successful, read each line of the file and 
-	// collect the station data
+	// collect the station data properties
 	if ( value == true )
 	{
 		CString csLine;
@@ -106,35 +106,28 @@ ULONG CClimateStations::CreateStationList()
 	// array schema streams
 	CSmartArray<CSchemaStream>& refStreams = refSchema->SchemaStreams;
 
-	// a collection of CStreams for the station list
-	shared_ptr<CStreams> pValue = shared_ptr<CStreams>
+	// ask the collection to create its folder and streams
+	bool bPreexist = CreateStreams
 	( 
-		new CStreams()
+		Host->Schemas, csCollectionName, Host->WorkingFolder 
 	);
 
-	// ask the collection to create its folder and streams
-	bool bPreexist = 
-		pValue->CreateStreams
-		( 
-			Host->Schemas, csCollectionName, Host->WorkingFolder 
-		);
-
 	// if the collection did not preexist, we need to read the source
-	// text files so we can populate the streams
-	bool bStations = 0;
+	// text "ushcn-v2.5-stations.txt" so we can populate the streams
+	bool bStations = false;
 	if ( !bPreexist )
 	{
 		bStations = ReadStationData();
 	}
 
 	// number of stream in station list collection
-	value = pValue->Streams.Count;
+	value = Streams.Count;
 
-	// persist the list
-	StationList = pValue;
+	//// persist the list
+	//StationList = pValue;
 
 	// collection of data streams
-	CKeyedCollection<CString, CStream>& streams = pValue->Streams;
+	CKeyedCollection<CString, CStream>& streams = Streams;
 	
 	// number of records in the files
 	ULONG ulRecords = 0;
@@ -233,6 +226,7 @@ ULONG CClimateStations::CreateStationList()
 			byte* pBuf = &buffer[ 0 ];
 			CString csSource;
 			float fSource = 0;
+			short sSource = 0;
 			LPSTR pSource = nullptr;
 
 			if ( csStream == _T( "GUID" ) )
@@ -258,6 +252,11 @@ ULONG CClimateStations::CreateStationList()
 				fSource = pStation->Elevation;
 				::memcpy( pBuf, &fSource, usRecordSize );
 			}
+			else if ( csStream == _T( "OffsetUTC" ) )
+			{
+				sSource = pStation->OffsetUTC;
+				::memcpy( pBuf, &sSource, usRecordSize );
+			}
 			else if ( csStream == _T( "State" ) )
 			{
 				csSource = pStation->State;
@@ -278,10 +277,6 @@ ULONG CClimateStations::CreateStationList()
 			{
 				csSource = pStation->Component3;
 			}
-			else if ( csStream == _T( "OffsetUTC" ) )
-			{
-				*pBuf = pStation->OffsetUTC;
-			}
 
 			// string case
 			if ( !csSource.IsEmpty() )
@@ -294,13 +289,136 @@ ULONG CClimateStations::CreateStationList()
 		}
 
 		ulRecord++;
-		pValue->Records = ulRecord;
 	}
 
-	// if the data is not cached, cache it now
-	if ( !bCached )
+	// the number of records of station data
+	Records = ulRecord;
+
+	// the data will be cached if the streams preexisted
+	// but that means the properties of each stream have
+	// not been populated and need to be populated now
+	if ( bCached )
 	{
-		// cache the file in the streams 
+		// loop through all of the levels of the streams and
+		// create a station populated from the stream data
+		CKeyedCollection<CString, CStream>& streams = Streams;
+		shared_ptr<CStream>& keyStream = streams.find( _T( "Station" ));
+		const ULONG ulLevels = keyStream->Levels;
+		for ( ULONG ulLevel = 0; ulLevel < ulLevels; ulLevel++ )
+		{
+			// create a new station
+			shared_ptr<CClimateStation> pStation =
+				shared_ptr<CClimateStation>( new CClimateStation );
+
+			// loop through each of the streams
+			for ( auto& refStream : streams.Items )
+			{
+				// name of the stream
+				const CString csName = refStream.second->Name;
+				
+				// station data is only strings or floats
+				CString csValue;
+				float fValue = -999.9f;
+
+				// use the stream's cache for fast access
+				CStreamCache* pCache = refStream.second->Cache;
+
+				// pointer to the beginning of a record
+				void* pData = pCache->GetData( ulLevel, 0 );
+
+				// number of bytes on the level
+				const USHORT usBytes = refStream.second->Size;
+
+				// a buffer to copy the data into
+				vector<char> buffer( usBytes + 1, 0 );
+
+				// pointer to the buffer
+				void* pBuf = &buffer[ 0 ];
+
+				// copy the data to our buffer
+				::memcpy( pBuf, pData, usBytes );
+
+				// type of data
+				const VARENUM eVt = pCache->Type;
+
+				switch ( eVt )
+				{
+					case VT_I1:
+					{
+						csValue = (LPSTR)pBuf;
+						break;
+					}
+					case VT_R4:
+					{
+						fValue = *( (float*)pBuf );
+						break;
+					}
+					default:
+					{
+						value = false;
+					}
+				}
+
+				// populate the property based on the stream's name
+				if ( csName == _T( "GUID" ) )
+				{
+					pStation->GUID = csValue;
+				}
+				else if ( csName == _T( "Station" ) )
+				{
+					pStation->Station = csValue;
+				}
+				else if ( csName == _T( "Latitude" ) )
+				{
+					pStation->Latitude = fValue;
+				}
+				else if ( csName == _T( "Longitude" ) )
+				{
+					pStation->Longitude = fValue;
+				}
+				else if ( csName == _T( "Elevation" ) )
+				{
+					pStation->Elevation = fValue;
+				}
+				else if ( csName == _T( "State" ) )
+				{
+					pStation->State = csValue;
+				}
+				else if ( csName == _T( "Location" ) )
+				{
+					pStation->Location = csValue;
+				}
+				else if ( csName == _T( "Component1" ) )
+				{
+					pStation->Component1 = csValue;
+				}
+				else if ( csName == _T( "Component2" ) )
+				{
+					pStation->Component2 = csValue;
+				}
+				else if ( csName == _T( "Component3" ) )
+				{
+					pStation->Component3 = csValue;
+				}
+				else if ( csName == _T( "OffsetUTC" ) )
+				{
+					pStation->OffsetUTC = csValue.GetAt( 0 );
+				}
+			}
+			
+			// read the key from the station stream
+			const CString csKey = pStation->Station;
+
+			// add the populated station to the collection
+			m_Stations.add( csKey, pStation );
+		}
+	}
+	// the data is not cached if the streams had to be created
+	// from the original "ushcn-v2.5-stations.txt" file so we
+	// need to populate the streams now
+	else
+	{
+		// cache the streams with the preexisting file data
 		for ( auto& stream : streams.Items )
 		{
 			const bool bOkay =

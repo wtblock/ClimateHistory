@@ -164,6 +164,7 @@ void CStream::SetValue( ULONG record, USHORT item, byte* value )
 	if ( VT_I1 == eType )
 	{
 		item = 0;
+		usValueSize = usRecordSize;
 	}
 
 	// offset into the file in bytes
