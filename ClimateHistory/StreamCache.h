@@ -389,7 +389,7 @@ public:
 		const VARENUM eVt = Type;
 		if ( eVt == VT_I1 )
 		{
-			// for element to zero because the entire array
+			// force element to zero because the entire array
 			// is considered as a single value
 			ulElement = 0;
 		}
@@ -407,32 +407,34 @@ public:
 	// the byte array should be 80 bytes long.
 	bool ChangeType( VARENUM value );
 	
-	// Get a value at a given index
-	COleVariant GetValue( ULONG ulIndex );
+	// Get a variant at a given index
+	COleVariant GetVariant( ULONG ulIndex );
+	// Set a variant at a given index
+	void SetVariant( ULONG ulIndex, COleVariant var );
 
-	// Get a value at a level and element
-	inline COleVariant GetValue
+
+	// a single variant of a record
+	inline COleVariant GetVariant
 	( 
 		ULONG ulLevel, ULONG ulElement 
 	)
 	{
 		const ULONG ulIndex = GetIndex( ulLevel, ulElement );
-		return GetValue( ulIndex );
+		return GetVariant( ulIndex );
 	}
-
-	// Set a value at a given index
-	void SetValue( ULONG ulIndex, COleVariant var );
-
-	// Set a value at a given index
-	inline void SetValue
+	// a single variant of a record
+	inline void SetVariant
 	( 
-		COleVariant var, ULONG ulLevel, ULONG ulElement = 0 
+		ULONG ulLevel, ULONG ulElement, COleVariant var
 	)
 	{
 		const ULONG ulIndex = GetIndex( ulLevel, ulElement );
-		SetValue( ulIndex, var );
+		SetVariant( ulIndex, var );
 	}
-	
+	// a single variant of a record
+	__declspec( property( get = GetVariant, put = SetVariant ) )
+		COleVariant Variant[][];
+
 	// Get a double value at a given index and return null value if unsuccessful
 	DOUBLE GetDouble( ULONG ulIndex );
 
@@ -517,6 +519,72 @@ public:
 		ULONG ulElement // element of the level
 	);
 	
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	inline CString GetString( ULONG record )
+	{
+		CString value;
+		const ULONG ulLevels = Levels;
+		VARENUM vt = Type;
+		if ( vt == VT_I1 && record < ulLevels )
+		{
+			// get the data at the beginning of the record
+			void* pData = GetData( record, 0 );
+
+			// size of the records
+			const USHORT usSize = (USHORT)LevelSizeInBytes;
+
+			// create a buffer large enough to hold the record plus a null character
+			vector<char> buffer = vector<char>( usSize + 1, 0 );
+			void* pBuf = &buffer[ 0 ];
+
+			// copy the data to the buffer
+			::memcpy( pBuf, pData, (size_t)usSize );
+
+			// read the value out as a string
+			value = (LPSTR)pBuf;
+		}
+
+		return value;
+	}
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	inline void SetString( ULONG record, LPCTSTR value )
+	{
+		const ULONG ulLevels = Levels;
+		const VARENUM vt = Type;
+		if ( vt == VT_I1 && record < ulLevels )
+		{
+			// size of the records
+			const ULONG ulSize = LevelSizeInBytes;
+
+			// read the value as a string
+			CString csSource( value );
+
+			// get the length of the string
+			USHORT usLength = csSource.GetLength();
+
+			// if the length is too long, truncate the copy
+			if ( usLength > ulSize )
+			{
+				usLength = (USHORT)ulSize;
+			}
+
+			// get a pointer to the beginning of the record
+			void* pData = GetData( record, 0 );
+
+			// get a pointer to the source
+			LPSTR pSource = csSource.GetBuffer( usLength );
+
+			// copy the source to the cache
+			memcpy( pData, (void*)pSource, (size_t)usLength );
+		}
+	}
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	__declspec( property( get = GetString, put = SetString ) )
+		CString String[];
+
 	// resize the data to the given number of elements. if the size
 	// is extended, the new levels are filled with null values.
 	// if the size is reduced, data will be deleted at the end.

@@ -234,9 +234,12 @@ COleVariant CStream::GetVariant( ULONG record, USHORT item )
 	{
 		case VT_I1: 
 		{
-			COleSafeArray sa;
-			sa.CreateOneDim( eVt, usSizeValue, pBuf );
-			::VariantCopy( &var, &sa );
+			const CString csValue = String[ ulOffset ];
+			VARIANT variant;
+			::VariantInit( &variant );
+			variant.vt = VT_BSTR;
+			variant.bstrVal = csValue.AllocSysString();
+			::VariantCopy( &var, &variant );
 			break;
 		}
 		case VT_UI1: var = *pBuf; break;
@@ -297,7 +300,7 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 	bool bOkay = false;
 
 	const USHORT usRecordSize = Size;
-	const USHORT usValueSize = ValueSize;
+	USHORT usValueSize = ValueSize;
 
 	if ( usValueSize == 0 )
 	{
@@ -333,20 +336,13 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 	const VARENUM eVt = Type;
 
 	// a string can be written into an array of characters
-	const bool bStringCase = eVt == VT_I2 && value.vt == VT_BSTR;
+	const bool bStringCase = eVt == VT_I1 && value.vt == VT_BSTR;
 
 	// handle string case
 	if ( bStringCase )
 	{
-		// a string is treated as a single value
-		// so not allowing an offset into the array
-		if ( item != 0 )
-		{
-			// flag the problem if it happens
-			CHelper::ErrorMessage( __FILE__, __LINE__ );
-
-			return;
-		}
+		item = 0;
+		usValueSize = usRecordSize;
 	}
 	else if ( value.vt != eVt )
 	{

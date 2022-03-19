@@ -123,9 +123,6 @@ ULONG CClimateStations::CreateStationList()
 	// number of stream in station list collection
 	value = Streams.Count;
 
-	//// persist the list
-	//StationList = pValue;
-
 	// collection of data streams
 	CKeyedCollection<CString, CStream>& streams = Streams;
 	
@@ -318,25 +315,14 @@ ULONG CClimateStations::CreateStationList()
 				
 				// station data is only strings or floats
 				CString csValue;
+				short sValue = 0;
 				float fValue = -999.9f;
 
 				// use the stream's cache for fast access
 				CStreamCache* pCache = refStream.second->Cache;
 
-				// pointer to the beginning of a record
-				void* pData = pCache->GetData( ulLevel, 0 );
-
-				// number of bytes on the level
-				const USHORT usBytes = refStream.second->Size;
-
-				// a buffer to copy the data into
-				vector<char> buffer( usBytes + 1, 0 );
-
-				// pointer to the buffer
-				void* pBuf = &buffer[ 0 ];
-
-				// copy the data to our buffer
-				::memcpy( pBuf, pData, usBytes );
+				// read the data as a variant
+				COleVariant var = pCache->GetVariant( ulLevel, 0 );
 
 				// type of data
 				const VARENUM eVt = pCache->Type;
@@ -345,12 +331,17 @@ ULONG CClimateStations::CreateStationList()
 				{
 					case VT_I1:
 					{
-						csValue = (LPSTR)pBuf;
+						csValue = CString( var.bstrVal );
+						break;
+					}
+					case VT_I2:
+					{
+						sValue = var.iVal;
 						break;
 					}
 					case VT_R4:
 					{
-						fValue = *( (float*)pBuf );
+						fValue = var.fltVal;
 						break;
 					}
 					default:
@@ -402,7 +393,7 @@ ULONG CClimateStations::CreateStationList()
 				}
 				else if ( csName == _T( "OffsetUTC" ) )
 				{
-					pStation->OffsetUTC = csValue.GetAt( 0 );
+					pStation->OffsetUTC = sValue;
 				}
 			}
 			

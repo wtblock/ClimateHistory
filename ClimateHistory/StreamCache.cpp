@@ -327,7 +327,7 @@ bool CStreamCache::FindMinMax( DOUBLE& dMinimum, DOUBLE& dMaximum )
 	ULONG ulCount = 0;
 	for ( ULONG ulValue = 0; ulValue < ulValues; ulValue++ )
 	{
-		COleVariant var = GetValue( ulValue );
+		COleVariant var = GetVariant( ulValue );
 		var.ChangeType( VT_R8 );
 		const double dValue = var.dblVal;
 		if ( !::_finite( dValue ) )
@@ -491,29 +491,46 @@ bool CStreamCache::ChangeType( VARENUM eNew )
 	
 /////////////////////////////////////////////////////////////////////////////
 // Set a value at a given index
-void CStreamCache::SetValue( ULONG ulIndex, COleVariant var )
+void CStreamCache::SetVariant( ULONG ulIndex, COleVariant var )
 {	// range check?
-	const ULONG ulValues = VectorElements;
-	if ( ulValues <= ulIndex )
+	const ULONG ulVariants = VectorElements;
+	if ( ulVariants <= ulIndex )
 	{
 		return; // out of range
 	}
 
 	// type compatibility?
 	const VARENUM eVt = Type;
+
+	// source and destination types should be the same
 	if ( var.vt != eVt )
 	{
-		const short nSize = GetElementSizeInBytes( (VARENUM)var.vt );
-		if ( nSize == 0 )
+		// except for the case of strings which are handled differently
+		if ( !( var.vt == VT_BSTR && eVt == VT_I1 ))
 		{
-			return; // not supported
+			return; // mismatched types
 		}
-		var.ChangeType( eVt );
 	}
+
 	// assign the variant based on type
 	switch ( eVt )
 	{
-		case VT_I1: m_StreamChars[ ulIndex ] = var.cVal; break;
+		case VT_I1: 
+		{
+			CString csVariant( var.bstrVal );
+			const size_t nSize = (size_t)LevelElements;
+
+			// point to the beginning of the record
+			char* pBuf = &m_StreamChars[ ulIndex ];
+			const size_t nLen = (size_t)csVariant.GetLength();
+
+			// fill the record with spaces
+			::memset( pBuf, 0x20, nSize );
+
+			// copy the string to the record
+			::memcpy( pBuf, csVariant.GetBuffer(), nLen );
+			break;
+		}
 		case VT_UI1 : m_StreamBytes[ ulIndex ] = var.bVal; break;
 		case VT_I2 : m_StreamShorts[ ulIndex ] = var.iVal; break;
 		case VT_UI2 : m_StreamUShorts[ ulIndex ] = var.uiVal; break; 
@@ -524,17 +541,17 @@ void CStreamCache::SetValue( ULONG ulIndex, COleVariant var )
 		case VT_R4 : m_StreamFloats[ ulIndex ] = var.fltVal; break;
 		case VT_R8 : m_StreamDoubles[ ulIndex ] = var.dblVal; break;
 	}
-} // SetValue
+} // SetVariant
 
 /////////////////////////////////////////////////////////////////////////////
 // Get a value at a given index
-COleVariant CStreamCache::GetValue( ULONG ulIndex )
+COleVariant CStreamCache::GetVariant( ULONG ulIndex )
 {
 	COleVariant var;
 	VARIANT variant;
 	::VariantInit( &variant );
-	const ULONG ulValues = VectorElements;
-	if ( ulValues <= ulIndex )
+	const ULONG ulVariants = VectorElements;
+	if ( ulVariants <= ulIndex )
 	{
 		return var;
 	}
@@ -546,11 +563,10 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 		// handled as an array of characters for string behavior
 		case VT_I1:
 		{
-			COleSafeArray sa;
-			void* pBuf = &m_StreamChars[ ulIndex ];
-			sa.CreateOneDim( eVt, ulValues, pBuf );
-			::VariantCopy( &variant, &sa );
-			var = variant;
+			const CString csVariant = String[ ulIndex ];
+			variant.vt = VT_BSTR;
+			variant.bstrVal = csVariant.AllocSysString();
+			::VariantCopy( &var, &variant );
 			break;
 		}
 		case VT_UI1 : var = m_StreamBytes[ ulIndex ]; break;
@@ -558,14 +574,14 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 		case VT_UI2 : // not handled by COleVariant directly
 		{
 			variant.ulVal = m_StreamUShorts[ ulIndex ]; 
-			var = variant;
+			::VariantCopy( &var, &variant );
 			break;
 		}
 		case VT_I4 : var = m_StreamLongs[ ulIndex ]; break;
 		case VT_UI4 : // not handled by COleVariant directly
 		{
 			variant.ulVal = m_StreamULongs[ ulIndex ]; 
-			var = variant;
+			::VariantCopy( &var, &variant );
 			break;
 		}
 		case VT_I8 : var = m_StreamLongLongs[ ulIndex ]; break;
@@ -576,7 +592,7 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 			if ( !::_finite( value ))
 			{
 				var = (float)Null;
-				SetValue( ulIndex, var );
+				SetVariant( ulIndex, var );
 			
 			} else
 			{
@@ -590,7 +606,7 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 			if ( !::_finite( value ))
 			{
 				var = Null;
-				SetValue( ulIndex, var );
+				SetVariant( ulIndex, var );
 			
 			} else
 			{
@@ -603,7 +619,7 @@ COleVariant CStreamCache::GetValue( ULONG ulIndex )
 	::VariantClear( &variant );
 
 	return var;
-} // GetValue 
+} // GetVariant 
 
 /////////////////////////////////////////////////////////////////////////////
 // Get a double value at a given index and return null value if unsuccessful

@@ -426,6 +426,15 @@ public:
 		const USHORT usValueSize = ValueSize;
 		VARENUM eType = Type;
 
+		// special handling for strings which are defined
+		// as an array of characters (VT_I1)
+		if ( eType == VT_I1 )
+		{
+			// force item to zero because the entire array
+			// is considered as a single value
+			item = 0;
+		}
+
 		// offset into the file in bytes
 		const ULONG value = record * ulRecordSize + item * usValueSize;
 
@@ -435,13 +444,72 @@ public:
 	__declspec( property( get = GetOffset ))
 		ULONG Offset[][];
 
-	// a single value of a record can return VT_EMPTY on failure
+	// a single value of a record
 	byte* GetValue( ULONG record, USHORT item = 0 );
 	// a single value of a record is assigned
 	void SetValue( ULONG record, USHORT item, byte* value );
 	// a single value of a record
 	__declspec( property( get = GetValue, put = SetValue ) )
 		byte* Value[][];
+
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	inline CString GetString( ULONG record )
+	{
+		CString value;
+		const ULONG ulLevels = Levels;
+		VARENUM vt = Type;
+		if ( vt == VT_I1 && record < ulLevels )
+		{
+			// get the data at the beginning of the record
+			void* pData = GetValue( record, 0 );
+
+			// size of the records
+			const USHORT usSize = Size;
+
+			// create a buffer large enough to hold the record plus a null character
+			vector<char> buffer = vector<char>( usSize + 1, 0 );
+			void* pBuf = &buffer[ 0 ];
+
+			// copy the data to the buffer
+			::memcpy( pBuf, pData, (size_t)usSize );
+
+			// read the value out as a string
+			value = (LPSTR)pBuf;
+		}
+
+		return value;
+	}
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	inline void SetString( ULONG record, LPCTSTR value )
+	{
+		const ULONG ulLevels = Levels;
+		const VARENUM vt = Type;
+		if ( vt == VT_I1 && record < ulLevels )
+		{
+			// size of the records
+			const ULONG ulSize = Size;
+
+			// read the value as a string
+			CString csSource( value );
+
+			// get the length of the string
+			USHORT usLength = csSource.GetLength();
+
+			// if the length is too long, truncate the copy
+			if ( usLength > ulSize )
+			{
+				usLength = (USHORT)ulSize;
+			}
+
+			Value[ record ][ 0 ] = (byte*)csSource.GetBuffer( usLength );
+		}
+	}
+	// collection string property which is based on an array of VT_I1 values
+	// and will fail if the data type is not VT_I1 or the record is out-of-range
+	__declspec( property( get = GetString, put = SetString ) )
+		CString String[];
 
 	// a single value of a record can return VT_EMPTY on failure
 	COleVariant GetVariant( ULONG record, USHORT item = 0 );

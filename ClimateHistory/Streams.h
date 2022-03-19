@@ -302,13 +302,16 @@ public:
 	}
 
 	// collection string property which is based on an array of VT_I1 values
-	// and will fail if the data type is not VT_I1
-	inline CString GetString( ULONG record, LPCTSTR stream );
+	// and will fail if the data type is not VT_I1, the steam does not exist
+	// or the record is out-of-range
+	CString GetString( ULONG record, LPCTSTR stream );
 	// collection string property which is based on an array of VT_I1 values
-	// and will fail if the data type is not VT_I1
+	// and will fail if the data type is not VT_I1, the steam does not exist
+	// or the record is out-of-range
 	void SetString( ULONG record, LPCTSTR stream, LPCTSTR value );
 	// collection string property which is based on an array of VT_I1 values
-	// and will fail if the data type is not VT_I1
+	// and will fail if the data type is not VT_I1, the steam does not exist
+	// or the record is out-of-range
 	__declspec( property( get = GetString, put = SetString ) )
 		CString String[][];
 
@@ -317,18 +320,14 @@ protected:
 	// globally unique identifier of a single record
 	inline CString GetUniqueID( ULONG record )
 	{
-		shared_ptr<CStream>& pStream = Streams.find( _T( "GUID" ));
-		if ( pStream != nullptr )
-		{
-		}
-		CString value;
-		//m_table.Read( _T( "GUID" ), record, value );
+		const CString value = String[ record ][ _T( "GUID" ) ];
+
 		return value;
 	}
 	// globally unique identifier of a single record
 	inline void SetUniqueID( ULONG record, CString value )
 	{
-		//m_table.Write( _T( "GUID" ), record, value );
+		String[ record ][ _T( "GUID" ) ] = value;
 	}
 	// globally unique identifier of a single record
 	__declspec( property( get = GetUniqueID, put = SetUniqueID ) )
@@ -415,7 +414,6 @@ protected:
 						break;
 					}
 				}
-
 			}
 		}
 

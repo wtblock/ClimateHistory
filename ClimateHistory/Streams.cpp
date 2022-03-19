@@ -83,8 +83,19 @@ bool CStreams::CreateStreams
 		pStream->Name = csStream;
 		pStream->SchemaStream = pSchemaStream;
 		pStream->Null = pSchemaStream->Null;
-		pStream->Host = this;
+		pStream->Title = pSchemaStream->Title;
+		pStream->Description = pSchemaStream->Description;
+		pStream->Enumeration = pSchemaStream->Enumeration;
+		pStream->PropertyGroup = pSchemaStream->PropertyGroup;
 
+		pStream->Entry = (CStream::ENUM_ENTRY)pSchemaStream->Entry;
+		pStream->Host = this;
+		pStream->Type = pSchemaStream->Type;
+		const USHORT usSize = pStream->ValueSize;
+		pStream->Size = pSchemaStream->Size;
+		const ULONG ulFileSize = pStream->FileSize;
+		const USHORT usValues = pStream->LevelValues;
+		const ULONG ulLevels = pStream->Levels;
 		Streams.add( csStream, pStream );
 	}
 
@@ -93,34 +104,22 @@ bool CStreams::CreateStreams
 
 /////////////////////////////////////////////////////////////////////////////
 // collection string property which is based on an array of VT_I1 values
-// and will fail if the data type is not VT_I1
+// and will fail if the data type is not VT_I1, the steam does not exist
+// or the record is out-of-range
 void CStreams::SetString( ULONG record, LPCTSTR stream, LPCTSTR value )
 {
 	shared_ptr<CStream>& pStream = Streams.find( stream );
 	if ( pStream != nullptr )
 	{
 		CStreamCache* pCache = pStream->Cache;
-		const ULONG ulLevels = pCache->Levels;
-		VARENUM vt = pCache->Type;
-		if ( vt == VT_I1 && record < ulLevels )
-		{
-			const ULONG ulSize = pCache->LevelSizeInBytes;
-			CString csSource( value );
-			USHORT usLength = csSource.GetLength();
-			if ( usLength > ulSize )
-			{
-				usLength = (USHORT)ulSize;
-			}
-			void* pData = pCache->GetData( record, 0 );
-			LPSTR pSource = csSource.GetBuffer( usLength );
-			memcpy( pData, (void*)pSource, (size_t)usLength );
-		}
+		pCache->String[ record ] = value;
 	}
 } // SetString
 
 /////////////////////////////////////////////////////////////////////////////
 // collection string property which is based on an array of VT_I1 values
-// and will fail if the data type is not VT_I1
+// and will fail if the data type is not VT_I1, the steam does not exist
+// or the record is out-of-range
 CString CStreams::GetString( ULONG record, LPCTSTR stream )
 {
 	CString value;
@@ -128,15 +127,7 @@ CString CStreams::GetString( ULONG record, LPCTSTR stream )
 	if ( pStream != nullptr )
 	{
 		CStreamCache* pCache = pStream->Cache;
-		const ULONG ulLevels = pCache->Levels;
-		VARENUM vt = pStream->Type;
-		if ( vt == VT_I1 && record < ulLevels )
-		{
-			void* pData = pCache->GetData( record, 0 );
-			const USHORT usSize = (USHORT)pCache->LevelSizeInBytes;
-			vector<char> buffer = vector<char>( usSize, 0 );
-			value = (LPSTR)pData;
-		}
+		value = pCache->String[ record ];
 	}
 
 	return value;
