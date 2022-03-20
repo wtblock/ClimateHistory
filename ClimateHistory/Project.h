@@ -7,6 +7,7 @@
 #include "KeyedCollection.h"
 #include "Schemas.h"
 #include "Streams.h"
+#include "Directory.h"
 #include "ClimateStations.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -31,6 +32,9 @@ protected:
 
 	// the path to the station data text file
 	CString m_csStationPath;
+
+	// directory of all streams in the project
+	shared_ptr<CDirectory> m_pDirectory;
 
 	// collection of climate stations
 	shared_ptr<CClimateStations> m_pClimateStations;
@@ -150,6 +154,10 @@ public:
 		// everything else depends on the schema being read
 		if ( bReadSchema )
 		{
+			m_pDirectory = shared_ptr<CDirectory>
+			(
+				new CDirectory( this )
+			);
 			m_pClimateStations = shared_ptr<CClimateStations>
 			(
 				new CClimateStations( this )

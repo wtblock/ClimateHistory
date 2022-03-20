@@ -29,9 +29,6 @@ protected:
 	// rapid station lookup of climate stations
 	CKeyedCollection<CString, CClimateStation> m_Stations;
 
-	//// list of the known station streams
-	//shared_ptr<CStreams> m_spStationList;
-
 	// station key
 	CString m_csStationKey;
 
@@ -66,20 +63,6 @@ public:
 	// station key
 	__declspec( property( get = GetStationKey, put = SetStationKey  ) )
 		CString StationKey;
-
-	//// list of the known station streams
-	//inline shared_ptr<CStreams>& GetStationList()
-	//{
-	//	return m_spStationList;
-	//}
-	//// list of the known station streams
-	//inline void SetStationList( shared_ptr<CStreams> value )
-	//{
-	//	m_spStationList = value;
-	//}
-	//// list of the known station streams
-	//__declspec( property( get = GetStationList, put = SetStationList  ) )
-	//	shared_ptr<CStreams> StationList;
 
 // protected methods
 protected:

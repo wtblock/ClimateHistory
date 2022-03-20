@@ -45,8 +45,6 @@ bool CStream::Open
 	Pathname = csPath;
 	SchemaStream = pSchemaStream;
 	Name = csName;
-
-	Name = csName;
 	CFile* pFile = File;
 	if ( pFile == nullptr )
 	{
@@ -89,9 +87,12 @@ bool CStream::Open
 		PropertyGroup = pSchemaStream->PropertyGroup;
 		const ULONG ulLevelValues = LevelValues;
 		File = pFile;
+		COleDateTime cd = CreationDate;
+		COleDateTime md = ModificationDate;
+
 		const ULONG ulLevels = Levels;
 		Cache->Create( Null, Type, ulLevelValues, ulLevels );
-		if ( !bCreate )
+		if ( !bCreate && ulLevels > 0 )
 		{
 			ReadIntoCache( 0, ulLevels - 1 );
 		}

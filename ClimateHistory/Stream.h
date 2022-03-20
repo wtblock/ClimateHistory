@@ -5,6 +5,7 @@
 #pragma once
 #include "StreamCache.h"
 #include "comutil.h"
+#include "ATLComTime.h"
 #include <memory>
 
 using namespace std;
@@ -83,6 +84,10 @@ protected:
 	double m_dMultiplier;
 	// the stream's unit conversion offset
 	double m_dAdditive;
+	// creation date and time
+	COleDateTime m_CreationDate;
+	// modification date and time
+	COleDateTime m_ModificationDate;
 
 // public properties
 public:
@@ -122,6 +127,90 @@ public:
 	// empty value for numeric data that has not been read
 	__declspec( property( get = GetNull, put = SetNull ) )
 		double Null;
+
+	// creation date and time
+	inline COleDateTime GetCreationDate()
+	{
+		CFileStatus fs;
+		int nYear = 0;
+		int nMonth = 0;
+		int nDay = 0;
+		int nHour = 0;
+		int nMinute = 0;
+		int nSecond = 0;
+
+		if ( IsOpen )
+		{
+			// get the file's status information
+			if ( File->GetStatus( fs ) )
+			{
+				CTime time = fs.m_ctime;
+				nYear = time.GetYear();
+				nMonth = time.GetMonth();
+				nDay = time.GetDay();
+				nHour = time.GetHour();
+				nMinute = time.GetMinute();
+				nSecond = time.GetSecond();
+
+				COleDateTime dt( nYear, nMonth, nDay, nHour, nMinute, nSecond );
+				
+				// persist the date
+				CreationDate = dt;
+			}
+		}
+		
+		return m_CreationDate;
+	}
+	// creation date and time
+	inline void SetCreationDate( COleDateTime value )
+	{
+		m_CreationDate = value;
+	}
+	// creation date and time
+	__declspec( property( get = GetCreationDate, put = SetCreationDate ) )
+		COleDateTime CreationDate;
+
+	// modification date and time
+	inline COleDateTime GetModificationDate()
+	{
+		CFileStatus fs;
+		int nYear = 0;
+		int nMonth = 0;
+		int nDay = 0;
+		int nHour = 0;
+		int nMinute = 0;
+		int nSecond = 0;
+
+		if ( IsOpen )
+		{
+			// get the file's status information
+			if ( File->GetStatus( fs ) )
+			{
+				CTime time = fs.m_mtime;
+				nYear = time.GetYear();
+				nMonth = time.GetMonth();
+				nDay = time.GetDay();
+				nHour = time.GetHour();
+				nMinute = time.GetMinute();
+				nSecond = time.GetSecond();
+
+				COleDateTime dt( nYear, nMonth, nDay, nHour, nMinute, nSecond );
+				
+				// persist the date
+				ModificationDate = dt;
+			}
+		}
+		
+		return m_ModificationDate;
+	}
+	// modification date and time
+	inline void SetModificationDate( COleDateTime value )
+	{
+		m_ModificationDate = value;
+	}
+	// modification date and time
+	__declspec( property( get = GetModificationDate, put = SetModificationDate ) )
+		COleDateTime ModificationDate;
 
 	// the schema definition of this stream
 	inline shared_ptr<CSchemaStream>& GetSchemaStream()
@@ -241,7 +330,7 @@ public:
 			case VT_R4:  value = 4; break;
 			case VT_I8:
 			case VT_UI8:
-			case VT_R8:  value = 8;
+			case VT_R8:  value = 8; break;
 			default : // unsupported type
 			{
 				CHelper::ErrorMessage( __FILE__, __LINE__ );
@@ -486,10 +575,27 @@ public:
 	{
 		const ULONG ulLevels = Levels;
 		const VARENUM vt = Type;
-		if ( vt == VT_I1 && record < ulLevels )
+		if ( vt == VT_I1 && record <= ulLevels )
 		{
 			// size of the records
 			const ULONG ulSize = Size;
+
+			// create a buffer for the data
+			vector<char> buffer( ulSize, 0x20 );
+			char* pChar = &buffer[ 0 ];
+
+			// length of the file
+			ULONG ulLength = FileSize;
+
+			// offset into the file in bytes
+			const ULONG ulOffset = Offset[ record ][ 0 ];
+
+			// allow the write to append a single record
+			if ( ulLength == ulOffset )
+			{
+				ulLength += ulSize;
+				File->SetLength( ulLength );
+			}
 
 			// read the value as a string
 			CString csSource( value );
@@ -503,7 +609,9 @@ public:
 				usLength = (USHORT)ulSize;
 			}
 
-			Value[ record ][ 0 ] = (byte*)csSource.GetBuffer( usLength );
+			::memcpy( pChar, csSource.GetBuffer( usLength ), usLength );
+
+			Value[ record ][ 0 ] = (byte*)pChar;
 		}
 	}
 	// collection string property which is based on an array of VT_I1 values

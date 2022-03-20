@@ -435,14 +435,12 @@ public:
 		Longitude = fMissing;
 		Elevation = fMissing;
 		OffsetUTC = 0;
-
 	}
 
 	// construct from lines of the "ushcn-v2.5-stations.txt" source
 	CClimateStation( LPCTSTR source )
 	{
 		Source = source;
-
 	}
 
 	// destructor
