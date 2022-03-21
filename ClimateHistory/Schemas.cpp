@@ -412,6 +412,10 @@ bool CSchemas::OpenSchemas( LPCTSTR path )
 								{
 									eEnum = VT_R8;
 								}
+								else if ( csType == _T( "VT_DATE" ) )
+								{
+									eEnum = VT_DATE;
+								}
 								else if ( csType == _T( "VT_BSTR" ) )
 								{
 									eEnum = VT_BSTR;

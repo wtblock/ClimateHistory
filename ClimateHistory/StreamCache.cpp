@@ -94,6 +94,7 @@ ULONG CStreamCache::GetVectorElements()
 		case VT_I8: return (ULONG)m_StreamLongLongs.size();
 		case VT_UI8: return (ULONG)m_StreamULongLongs.size();
 		case VT_R4: return (ULONG)m_StreamFloats.size();
+		case VT_DATE:
 		case VT_R8: return (ULONG)m_StreamDoubles.size();
 		default: return 0;
 	}
@@ -136,6 +137,7 @@ void CStreamCache::clear()
 		case VT_I8 : m_StreamLongLongs.clear(); break;
 		case VT_UI8 : m_StreamULongLongs.clear(); break;
 		case VT_R4 : m_StreamFloats.clear(); break;
+		case VT_DATE:
 		case VT_R8 : m_StreamDoubles.clear(); break;
 	}
 } // clear
@@ -185,6 +187,7 @@ void* CStreamCache::GetData( ULONG ulIndex/* = 0*/ )
 		case VT_I8 : pData = &m_StreamLongLongs[ ulIndex ]; break;
 		case VT_UI8 : pData = &m_StreamULongLongs[ ulIndex ]; break;
 		case VT_R4 : pData = &m_StreamFloats[ ulIndex ]; break;
+		case VT_DATE:
 		case VT_R8 : pData = &m_StreamDoubles[ ulIndex ]; break;
 	}
 	return pData;
@@ -245,6 +248,7 @@ void CStreamCache::resize
 		case VT_I8 : m_StreamLongLongs.resize( values, (LONGLONG)dNull ); break;
 		case VT_UI8 : m_StreamULongLongs.resize( values, (ULONGLONG)dNull ); break;
 		case VT_R4 : m_StreamFloats.resize( values, (FLOAT)dNull ); break;
+		case VT_DATE:
 		case VT_R8 : m_StreamDoubles.resize( values, (DOUBLE)dNull ); break;
 	}
 } // resize
@@ -264,6 +268,7 @@ short CStreamCache::GetElementSizeInBytes( VARENUM eVt )
 		case VT_I8 : return sizeof( LONGLONG );
 		case VT_UI8 : return sizeof( ULONGLONG );
 		case VT_R4 : return sizeof( FLOAT );
+		case VT_DATE :
 		case VT_R8 : return sizeof( DOUBLE );
 		default : return 0;
 	}
@@ -539,7 +544,8 @@ void CStreamCache::SetVariant( ULONG ulIndex, COleVariant var )
 		case VT_I8 : m_StreamLongLongs[ ulIndex ] = var.llVal; break;
 		case VT_UI8 : m_StreamULongLongs[ ulIndex ] = var.ullVal; break;
 		case VT_R4 : m_StreamFloats[ ulIndex ] = var.fltVal; break;
-		case VT_R8 : m_StreamDoubles[ ulIndex ] = var.dblVal; break;
+		case VT_DATE: m_StreamDoubles[ ulIndex ] = var.date; break;
+		case VT_R8: m_StreamDoubles[ ulIndex ] = var.dblVal; break;
 	}
 } // SetVariant
 
@@ -614,6 +620,21 @@ COleVariant CStreamCache::GetVariant( ULONG ulIndex )
 			}
 			break;
 		}
+		case VT_DATE:
+		{
+			const double value = m_StreamDoubles[ ulIndex ]; 
+			if ( !::_finite( value ))
+			{
+				var = Null;
+				SetVariant( ulIndex, var );
+			
+			} else
+			{
+				COleDateTime oDT( value );
+				var = oDT;
+			}
+			break;
+		}
 	}
 
 	::VariantClear( &variant );
@@ -644,6 +665,7 @@ double CStreamCache::GetDouble( ULONG ulIndex )
 		case VT_I8: dValue = (double)m_StreamLongLongs[ ulIndex ]; break;
 		case VT_UI8: dValue = (double)m_StreamULongLongs[ ulIndex ]; break;
 		case VT_R4: dValue = m_StreamFloats[ ulIndex ]; break;
+		case VT_DATE:
 		case VT_R8: dValue = m_StreamDoubles[ ulIndex ]; break;
 	}
 	
@@ -677,6 +699,7 @@ bool CStreamCache::SetDouble( ULONG ulIndex, DOUBLE dValue )
 		case VT_I8: m_StreamLongLongs[ ulIndex ] = (LONGLONG)dValue; return true;
 		case VT_UI8: m_StreamULongLongs[ ulIndex ] = (ULONGLONG)dValue; return true;
 		case VT_R4: m_StreamFloats[ ulIndex ] = (FLOAT)dValue; return true;
+		case VT_DATE:
 		case VT_R8: m_StreamDoubles[ ulIndex ] = dValue; return true;
 	}
 	return false;
@@ -698,6 +721,7 @@ ULONG CStreamCache::AppendDouble( DOUBLE dValue )
 		case VT_I8: m_StreamLongLongs.push_back( (LONGLONG)dValue ); break;
 		case VT_UI8: m_StreamULongLongs.push_back( (ULONGLONG)dValue ); break;
 		case VT_R4: m_StreamFloats.push_back( (FLOAT)dValue ); break;
+		case VT_DATE:
 		case VT_R8: m_StreamDoubles.push_back( dValue ); break;
 	}
 	const ULONG ulValues = VectorElements;
@@ -772,6 +796,7 @@ bool CStreamCache::SetDoubles( vector<DOUBLE>& arrValues )
 				m_StreamFloats[ ulIndex ] = (FLOAT)arrValues[ ulIndex ];
 			}
 			return true;
+		case VT_DATE:
 		case VT_R8: m_StreamDoubles = arrValues; return true;
 	}
 	return false;

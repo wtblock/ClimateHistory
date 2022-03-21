@@ -74,6 +74,9 @@ protected:
 	// an index key built from the key values above
 	CString m_csKey;
 
+	// comma separated labels and values for a record
+	pair<CString, CString> m_csCSV;
+
 	// flag to indicate the collection preexisted in order
 	// to prevent re-parsing the source files
 	bool m_bPreexist;
@@ -162,6 +165,17 @@ public:
 	__declspec( property( get = GetGroup, put = SetGroup ) )
 		CString Group;
 
+	// comma separated labels and values for a record
+	pair<CString,CString> GetCSV( ULONG ulRecord );
+	// comma separated labels and values for a record
+	inline void SetCSV( ULONG /*ulRecord*/, pair<CString, CString> value )
+	{
+		m_csCSV = value;
+	}
+	// comma separated labels and values for a record
+	__declspec( property( get = GetCSV, put = SetCSV ) )
+		pair<CString, CString> CSV[];
+
 	// pathname of the collection
 	inline CString GetPathName()
 	{
@@ -213,7 +227,31 @@ public:
 	// number of records in a the streams
 	inline ULONG GetRecords()
 	{
-		return m_ulRecords;
+		ULONG value = m_ulRecords;
+		if ( value == 0 )
+		{
+			// every collection has a GUID stream
+			shared_ptr<CStream>& pStream = Streams.find( _T( "GUID" ) );
+			if ( pStream != nullptr )
+			{
+				// size of a record in bytes
+				const ULONG ulSize = pStream->Size;
+
+				// file size in bytes
+				const ULONG ulFilesize = pStream->FileSize;
+
+				// number of records is the file size divided by record size
+				if ( ulSize != 0 )
+				{
+					value = ulFilesize / ulSize;
+
+					// persist the value
+					Records = value;
+				}
+			}
+		}
+
+		return value;
 	}
 	// number of records in a the streams
 	inline void SetRecords( ULONG value )
@@ -401,18 +439,13 @@ protected:
 				const ULONG ulLevels = pCache->Levels;
 				if ( record < ulLevels )
 				{
-					LPSTR pBuf = (char*)pCache->GetData( record, 0 );
-					if ( pBuf != nullptr )
-					{
-						csValue = pBuf;
-						values.push_back( csValue );
-					}
-					else // if any of the keys are not available, abort
-					{
-						bOkay = false;
-						values.clear();
-						break;
-					}
+					csValue = pCache->String[ record ];
+					values.push_back( csValue );
+				} 
+				else
+				{
+					values.empty();
+					break;
 				}
 			}
 		}

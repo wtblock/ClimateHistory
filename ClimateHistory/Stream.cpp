@@ -109,11 +109,15 @@ byte* CStream::GetValue( ULONG record, USHORT item /*= 0*/ )
 	// I am a pessimist 
 	bool bOkay = false;
 
-	// size of a single value within the record
-	const long lValueSize = ValueSize;
-
 	// type of data in the file
 	VARENUM eType = Type;
+	if ( eType == VT_I1 ) // special string handling
+	{
+		item = 0;
+	}
+
+	// size of a single value within the record
+	const long lValueSize = eType == VT_I1 ? Size : ValueSize;
 
 	// buffer to read data into
 	m_arrBuffer.resize( 0 );
@@ -206,6 +210,132 @@ void CStream::SetValue( ULONG record, USHORT item, byte* value )
 } // SetValue
 
 /////////////////////////////////////////////////////////////////////////////
+// string property for a given record
+CString CStream::GetString( ULONG record )
+{
+	CString value;
+	const ULONG ulLevels = Levels;
+	if ( record >= ulLevels )
+	{
+		return value;
+	}
+
+	// get the data at the beginning of the record
+	void* pData = GetValue( record, 0 );
+
+	// entry enumeration implies a text value associated with a number
+	ENUM_ENTRY eEnum = Entry;
+	const bool bEnum = eEnum == eeEnum1 || eEnum == eeEnum2;
+
+	// size of a single value within the record
+	const size_t lValueSize = (size_t)ValueSize;
+
+	// size of the records
+	const size_t usSize = (size_t)Size;
+
+	// create a buffer large enough to hold the record plus a null character
+	vector<char> buffer = vector<char>( usSize + 1, 0 );
+	void* pBuf = &buffer[ 0 ];
+
+	// copy the data to the buffer
+	::memcpy( pBuf, pData, usSize );
+
+	VARENUM vt = Type;
+	switch ( vt )
+	{
+		case VT_I1:  
+		{
+			// read the value out as a string
+			value = (LPSTR)pBuf;
+			break;
+		}
+		case VT_UI1: 
+		{
+			byte temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+
+			// enumerations are always VT_UI1 type
+			if ( bEnum )
+			{
+				value = *m_mapEnum2Text.find( temp );
+			}
+			else
+			{
+				value.Format( _T( "%d" ), temp );
+			}
+			break;
+		}
+		case VT_I2:  
+		{
+			short temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_UI2: 
+		{
+			USHORT temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_I4:  
+		{
+			long temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_UI4: 
+		{
+			ULONG temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_I8:  
+		{
+			LONGLONG temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_UI8: 
+		{
+			ULONGLONG temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%d" ), temp );
+			break;
+		}
+		case VT_R4:  
+		{
+			float temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%g" ), temp );
+			break;
+		}
+		case VT_DATE:
+		{
+			double temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			COleDateTime oDT( temp );
+			value = oDT.Format( _T( "%Y-%m-%d %H:%M:%S" ));
+			break;
+		}
+		case VT_R8:  
+		{
+			double temp = 0;
+			::memcpy( &temp, pBuf, lValueSize );
+			value.Format( _T( "%g" ), temp );
+			break;
+		}
+		default: return value;
+	}
+
+	return value;
+} // GetString
+
+/////////////////////////////////////////////////////////////////////////////
 // a single value of a record can return VT_EMPTY on failure
 COleVariant CStream::GetVariant( ULONG record, USHORT item )
 {
@@ -285,6 +415,21 @@ COleVariant CStream::GetVariant( ULONG record, USHORT item )
 			else
 			{
 				var = value;
+			}
+			break;
+		}
+		case VT_DATE:
+		{
+			const double value = (double)*pBuf;
+			if ( !::_finite( value ) )
+			{
+				var = Null;
+				Variant[ record ][ item ] = var;
+			}
+			else
+			{
+				COleDateTime oDT( value );
+				var = oDT;
 			}
 			break;
 		}
@@ -386,6 +531,7 @@ void CStream::SetVariant( ULONG record, USHORT item, COleVariant value )
 		case VT_UI8: ::memcpy( pBuf, &value.ullVal, usValueSize ); break;
 		case VT_R4: ::memcpy( pBuf, &value.fltVal, usValueSize ); break;
 		case VT_R8: ::memcpy( pBuf, &value.dblVal, usValueSize ); break;
+		case VT_DATE: ::memcpy( pBuf, &value.date, usValueSize ); break;
 		default :
 		{
 			bOkay = false;

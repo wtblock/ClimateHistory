@@ -4,6 +4,7 @@
 
 #pragma once
 #include "StreamCache.h"
+#include "KeyedCollection.h"
 #include "comutil.h"
 #include "ATLComTime.h"
 #include <memory>
@@ -70,6 +71,10 @@ protected:
 	ENUM_ENTRY m_eEntry;
 	// Enumeration string used by the "eeEnum1" and "eeEnum2" entry types
 	CString m_csEnumeration;
+	// map enumerations to text
+	CKeyedCollection<int,CString> m_mapEnum2Text;
+	// map text to enumerations
+	CKeyedCollection<CString,int> m_mapText2Enum;
 	// name used to collect properties in a property sheet
 	CString m_csPropertyGroup;
 	// buffer for reading data
@@ -330,6 +335,7 @@ public:
 			case VT_R4:  value = 4; break;
 			case VT_I8:
 			case VT_UI8:
+			case VT_DATE:
 			case VT_R8:  value = 8; break;
 			default : // unsupported type
 			{
@@ -487,8 +493,77 @@ public:
 		return m_csEnumeration;
 	}
 	// Enumeration string used by the "eeEnum1" and "eeEnum2" entry types
-	inline void SetEnumeration( LPCTSTR value ){
+	inline void SetEnumeration( LPCTSTR value )
+	{
 		m_csEnumeration = value;
+		const ENUM_ENTRY eEntry = Entry;
+		if ( eEntry == eeEnum1 )
+		{
+			const CString csDelim = _T( "," );
+			int nEnum = 0;
+			int nStart = 0;
+			do
+			{
+				CString csToken = m_csEnumeration.Tokenize( csDelim, nStart );
+				if ( csToken.IsEmpty() )
+				{
+					break;
+				}
+
+				// index the enumeration to the token
+				shared_ptr<CString> pToken = shared_ptr<CString>
+				( 
+					new CString( csToken )
+				);
+				m_mapEnum2Text.add( nEnum, pToken );
+
+				// index the token to the enumeration
+				shared_ptr<int> pEnum = shared_ptr<int>
+				(
+					new int( nEnum )
+				);
+				m_mapText2Enum.add( csToken, pEnum );
+
+			} while ( true );
+		}
+		else if ( eEntry == eeEnum2 )
+		{
+			const CString csDelim = _T( "," );
+			int nStart = 0;
+			do
+			{
+				// numerical value associated with the entry description
+				CString csEnum = m_csEnumeration.Tokenize( csDelim, nStart );
+				if ( csEnum.IsEmpty() )
+				{
+					break;
+				}
+
+				// entry description
+				CString csToken = m_csEnumeration.Tokenize( csDelim, nStart );
+				if ( csToken.IsEmpty() )
+				{
+					break;
+				}
+				const int nEnum = (int)_tstol( csEnum );
+
+				// index the enumeration to the token
+				shared_ptr<CString> pToken = shared_ptr<CString>
+				(
+					new CString( csToken )
+				);
+				m_mapEnum2Text.add( nEnum, pToken );
+
+				// index the token to the enumeration
+				shared_ptr<int> pEnum = shared_ptr<int>
+				(
+					new int( nEnum )
+				);
+				m_mapText2Enum.add( csToken, pEnum );
+
+			}
+			while ( true );
+		}
 	}
 	// Enumeration string used by the "eeEnum1" and "eeEnum2" entry types
 	__declspec( property( get = GetEnumeration, put = SetEnumeration ) )
@@ -543,32 +618,7 @@ public:
 
 	// collection string property which is based on an array of VT_I1 values
 	// and will fail if the data type is not VT_I1 or the record is out-of-range
-	inline CString GetString( ULONG record )
-	{
-		CString value;
-		const ULONG ulLevels = Levels;
-		VARENUM vt = Type;
-		if ( vt == VT_I1 && record < ulLevels )
-		{
-			// get the data at the beginning of the record
-			void* pData = GetValue( record, 0 );
-
-			// size of the records
-			const USHORT usSize = Size;
-
-			// create a buffer large enough to hold the record plus a null character
-			vector<char> buffer = vector<char>( usSize + 1, 0 );
-			void* pBuf = &buffer[ 0 ];
-
-			// copy the data to the buffer
-			::memcpy( pBuf, pData, (size_t)usSize );
-
-			// read the value out as a string
-			value = (LPSTR)pBuf;
-		}
-
-		return value;
-	}
+	CString GetString( ULONG record );
 	// collection string property which is based on an array of VT_I1 values
 	// and will fail if the data type is not VT_I1 or the record is out-of-range
 	inline void SetString( ULONG record, LPCTSTR value )

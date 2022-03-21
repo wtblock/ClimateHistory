@@ -180,3 +180,40 @@ vector<CString>& CStreams::GetKeyStreams()
 } // GetKeyStreams
 
 /////////////////////////////////////////////////////////////////////////////
+// comma separated values for a record
+pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
+{
+	pair<CString, CString> value;
+
+	// loop through the names and read the values for the given record
+	bool bFirst = true;
+	for ( auto& node : m_Streams.Items )
+	{
+		CString csData = node.second->String[ ulRecord ].Trim();
+		if ( csData.IsEmpty() )
+		{
+			csData = _T( "<empty>" );
+		}
+
+		if ( bFirst )
+		{
+			bFirst = false;
+			value.first = node.first;
+			value.second = csData;
+		} 
+		else
+		{
+			value.first += _T( "," );
+			value.first += node.first;
+			value.second += _T( "," );
+			value.second += csData;
+		}
+	}
+
+	// persist the value
+	CSV[ ulRecord ] = value;
+
+	return value;
+} // GetCSV
+
+/////////////////////////////////////////////////////////////////////////////

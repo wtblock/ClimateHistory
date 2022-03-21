@@ -531,6 +531,7 @@ public:
 			case VT_I8: value = (T)input.llVal; break;
 			case VT_UI8: value = (T)input.ullVal : break;
 			case VT_R4: value = (T)input.fltVal; break;
+			case VT_DATE: // dates are doubles
 			case VT_R8: value = (T)input.dblVal; break;
 			case VT_BSTR: value = (T)input.bstrVal; break;
 			default: bValue = false;

@@ -51,6 +51,10 @@ public:
 public:
 	// constructor
 	CDirectory( CProject* pHost );
+	// destructor
+	virtual ~CDirectory()
+	{
 
+	}
 };
 

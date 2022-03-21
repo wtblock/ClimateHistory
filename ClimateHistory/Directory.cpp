@@ -129,7 +129,7 @@ ULONG CDirectory::CreateOpenDirctory()
 			}
 			else if ( csStream == _T( "Name" ) )
 			{
-				stream.second->String[ ulRecord ] = csStream;
+				stream.second->String[ ulRecord ] = csCollectionName;
 			}
 			else if ( csStream == _T( "Schema" ) )
 			{
@@ -158,7 +158,23 @@ ULONG CDirectory::CreateOpenDirctory()
 		}
 	}
 
+#ifdef _DEBUG
+	for ( ULONG ulRecord = 0; ulRecord < Records; ulRecord++ )
+	{
+		pair<CString,CString> pairCSV = CSV[ ulRecord ];
+		if ( ulRecord == 0 )
+		{
+			TRACE( pairCSV.first + _T( "\n" ));
+		}
+		TRACE( pairCSV.second + _T( "\n" ) );
+	}
+#endif
+
+	// the stream names that comprise the unique key for each record
 	vector<CString>& keyStreams = KeyStreams;
+
+	// create the index based on key streams
+	Index();
 
 	return value;
 } // CreateOpenDirctory
