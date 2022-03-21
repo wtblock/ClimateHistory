@@ -32,6 +32,51 @@ void CDirectory::SetHost( CProject* value )
 } // SetHost
 
 /////////////////////////////////////////////////////////////////////////////
+void CDirectory::AddDirectoryEntry
+( 
+	// collection of data streams
+	CKeyedCollection<CString, CStream>& streams,
+	shared_ptr<CStream>& pStream, CString csGUID, ULONG ulRecord,
+	CSchemaStream::ENUM_COLLECTION eType
+)
+{
+	shared_ptr<CStream>& pGUID = streams.find( _T( "GUID" ) );
+	pGUID->String[ ulRecord ] = csGUID;
+
+	shared_ptr<CStream>& pVersion = streams.find( _T( "Version" ) );
+	pVersion->String[ ulRecord ] = Version;
+
+	shared_ptr<CStream>& pGroup = streams.find( _T( "Group" ) );
+	pGroup->String[ ulRecord ] = Group;
+
+	shared_ptr<CStream>& pName = streams.find( _T( "Name" ) );
+	pName->String[ ulRecord ] = pStream->Name;
+
+	shared_ptr<CStream>& pSchema = streams.find( _T( "Schema" ) );
+	pSchema->String[ ulRecord ] = Schema;
+
+	shared_ptr<CStream>& pDescription =
+		streams.find( _T( "Description" ) );
+	pDescription->String[ ulRecord ] = pStream->Description;
+
+	shared_ptr<CStream>& pClassification =
+		streams.find( _T( "Classification" ) );
+	const BYTE bType = (BYTE)eType;
+	pClassification->Value[ ulRecord ][ 0 ] = (byte*)&bType;
+
+	shared_ptr<CStream>& pCreateionDate =
+		streams.find( _T( "CreateionDate" ) );
+	const double dCD = pStream->CreationDate.m_dt;
+	pCreateionDate->Value[ ulRecord ][ 0 ] = (byte*)&dCD;
+
+	shared_ptr<CStream>& pModificationDate =
+		streams.find( _T( "ModificationDate" ) );
+	const double dMD = pStream->ModificationDate.m_dt;
+	pModificationDate->Value[ ulRecord ][ 0 ] = (byte*)&dMD;
+
+} // AddDirectoryStream
+
+/////////////////////////////////////////////////////////////////////////////
 ULONG CDirectory::CreateOpenDirctory()
 {
 	ULONG value = 0;
@@ -111,50 +156,15 @@ ULONG CDirectory::CreateOpenDirctory()
 		ULONG ulRecord = 0;
 		for ( auto& stream : streams.Items )
 		{
-			const CString csStream = stream.first;
-			if ( csStream == _T( "GUID" ) )
-			{
-				const CString csGUID = CHelper::MakeGUID();
-				stream.second->String[ ulRecord ] = csGUID;
-			}
-			else if ( csStream == _T( "Version" ) )
-			{
-				const CString csVersion = Version;
-				stream.second->String[ ulRecord ] = csVersion;
-			}
-			else if ( csStream == _T( "Group" ) )
-			{
-				const CString csGroup = Group;
-				stream.second->String[ ulRecord ] = csGroup;
-			}
-			else if ( csStream == _T( "Name" ) )
-			{
-				stream.second->String[ ulRecord ] = csCollectionName;
-			}
-			else if ( csStream == _T( "Schema" ) )
-			{
-				stream.second->String[ ulRecord ] = refSchema->Schema;
-			}
-			else if ( csStream == _T( "Description" ) )
-			{
-				stream.second->String[ ulRecord ] = refSchema->Description;
-			}
-			else if ( csStream == _T( "Classification" ) )
-			{
-				CSchemaStream::ENUM_COLLECTION eType = CSchemaStream::ecDirectory;
-				const BYTE bType = (BYTE)eType;
-				stream.second->Value[ ulRecord ][ 0 ] = (byte*)&bType;
-			}
-			else if ( csStream == _T( "CreateionDate" ) )
-			{
-				const double dCD = stream.second->CreationDate.m_dt;
-				stream.second->Value[ ulRecord ][ 0 ] = (byte*)&dCD;
-			}
-			else if ( csStream == _T( "ModificationDate" ) )
-			{
-				const double dMD = stream.second->ModificationDate.m_dt;
-				stream.second->Value[ ulRecord ][ 0 ] = (byte*)&dMD;
-			}
+			const CString csGUID = CHelper::MakeGUID();
+			CSchemaStream::ENUM_COLLECTION eType =
+				CSchemaStream::ecDirectory;
+			AddDirectoryEntry
+			( 
+				streams, stream.second, csGUID, ulRecord, eType 
+			);
+
+			ulRecord++;
 		}
 	}
 

@@ -38,6 +38,14 @@ protected:
 
 // public methods
 public:
+	void AddDirectoryEntry
+	(
+		// collection of data streams
+		CKeyedCollection<CString, CStream>& streams,
+		shared_ptr<CStream>& pStream, CString csGUID, ULONG ulRecord,
+		CSchemaStream::ENUM_COLLECTION eType 
+	);
+	
 	// create / open the directory
 	ULONG CreateOpenDirctory();
 
