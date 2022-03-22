@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "Project.h"
 #include "ClimateStations.h"
+#include "Directory.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -115,6 +116,18 @@ ULONG CClimateStations::CreateStationList()
 		Host->Schemas, csSchema, Host->WorkingFolder, csCollection 
 	);
 
+	// the directory of the project
+	shared_ptr<CDirectory>& pDirectory = Host->Directory;
+
+	// directory records
+	const ULONG ulDirRecords = pDirectory->Records;
+
+	// next directory record if needed
+	ULONG ulDir = ulDirRecords;
+
+	// create directory records
+	bool bCreateDirectoryRecords = !bPreexist;
+
 	// if the collection did not preexist, we need to read the source
 	// text "ushcn-v2.5-stations.txt" so we can populate the streams
 	bool bStations = false;
@@ -123,7 +136,7 @@ ULONG CClimateStations::CreateStationList()
 		bStations = ReadStationData();
 	}
 
-	// number of stream in station list collection
+	// number of streams in station list collection
 	value = Streams.Count;
 
 	// collection of data streams
@@ -424,6 +437,38 @@ ULONG CClimateStations::CreateStationList()
 				ASSERT( FALSE );
 			}
 		}
+	}
+
+	// if these streams did not preexist, the directory needs to be
+	// updated to include the new streams
+	if ( bCreateDirectoryRecords )
+	{
+		for ( auto& stream : streams.Items )
+		{
+			const CString csGUID = CHelper::MakeGUID();
+			CSchemaStream::ENUM_COLLECTION eType =
+				CSchemaStream::ecTabular;
+
+			// add the streams to the directory
+			pDirectory->AddDirectoryEntry
+			(
+				pDirectory->Streams, // collection of directory streams
+				stream.second, // stream being recorded
+				csCollection, // parent collection of the stream
+				csGUID, // globally unique identifier for the stream
+				ulDir, // record number in the directory
+				eType // type of collection
+			);
+
+#ifdef _DEBUG
+			pair<CString, CString> pairCSV = pDirectory->CSV[ ulDir ];
+			TRACE( pairCSV.second + _T( "\n" ) );
+#endif
+			ulDir++;
+		}
+
+		// update the directory's index
+		pDirectory->Index();
 	}
 
 	return value;

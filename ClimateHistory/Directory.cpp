@@ -64,7 +64,7 @@ void CDirectory::AddDirectoryEntry
 	pName->String[ ulRecord ] = pStream->Name;
 
 	shared_ptr<CStream>& pSchema = streams.find( _T( "Schema" ) );
-	pSchema->String[ ulRecord ] = Schema;
+	pSchema->String[ ulRecord ] = pStream->Host->Schema;
 
 	shared_ptr<CStream>& pDescription =
 		streams.find( _T( "Description" ) );

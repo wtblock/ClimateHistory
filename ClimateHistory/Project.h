@@ -111,6 +111,34 @@ public:
 	__declspec( property( get = GetSettings, put = SetSettings  ) )
 		CString Settings;
 
+	// directory of all streams in the project
+	inline shared_ptr<CDirectory>& GetDirectory()
+	{
+		return m_pDirectory;
+	}
+	// directory of all streams in the project
+	inline void SetDirectory( shared_ptr<CDirectory> value )
+	{
+		m_pDirectory = value;
+	}
+	// directory of all streams in the project
+	__declspec( property( get = GetDirectory, put = SetDirectory  ) )
+		shared_ptr<CDirectory> Directory;
+
+	// collection of climate stations
+	inline shared_ptr<CClimateStations>& GetClimateStations()
+	{
+		return m_pClimateStations;
+	}
+	// collection of climate stations
+	inline void SetClimateStations( shared_ptr<CClimateStations> value )
+	{
+		m_pClimateStations = value;
+	}
+	// collection of climate stations
+	__declspec( property( get = GetClimateStations, put = SetClimateStations  ) )
+		shared_ptr<CClimateStations> ClimateStations;
+
 	// the schema definitions in the project
 	inline CSchemas* GetSchemas()
 	{

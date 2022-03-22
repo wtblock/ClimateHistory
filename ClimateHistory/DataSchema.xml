@@ -116,9 +116,8 @@
 		Name="Station"
 		Description="List of data streams in this project"
 		Schema="Station"
-		IndexKeys="Date,Station">
+		IndexKeys="Date">
 		<Stream Name="GUID" Type="VT_I1" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
-		<Stream Name="Station" Type="VT_I1" Size="11" UnitCategory="" Title="Station ID" Description="Identifies the temperature station" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
 		<Stream Name="Date" Type="VT_DATE" Size="8" UnitCategory="Date" Title="Measurement Date" Description="Date expressed as days since 1900" PropertyGroup="Date" Entry="Date and time" Enumeration=""/>
 		<Stream Name="Maximum" Null="-9999" Type="VT_R4" Size="4" UnitCategory="Temperature" Title="Maximum temperature" Description="Maximum temperature in Celcius" PropertyGroup="Temperatures" Entry="free form" Enumeration=""/>
 		<Stream Name="Minimum" Null="-9999" Type="VT_R4" Size="4" UnitCategory="Temperature" Title="Minimum temperature" Description="Minimum temperature in Celcius" PropertyGroup="Temperatures" Entry="free form" Enumeration=""/>

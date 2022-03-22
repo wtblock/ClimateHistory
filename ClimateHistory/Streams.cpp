@@ -191,8 +191,10 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 	// name of the schema this collection is based on
 	const CString csSchema = Schema;
 
+	// the index into the schema array
 	const LONG lSchema = DataSchema->nameFind( csSchema );
 
+	// should not happen, being anal
 	if ( lSchema == -1 )
 	{
 		// flag the problem if it happens
@@ -201,8 +203,13 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 		return value;
 	}
 
+	// collection of all schemas
 	CSmartArray<CSchema>& Schemas = DataSchema->Schemas;
+
+	// the schema we are based on
 	shared_ptr<CSchema>& pSchema = Schemas.get( lSchema );
+
+	// should not happen, being anal
 	if ( pSchema == nullptr )
 	{
 		// flag the problem if it happens
@@ -211,29 +218,41 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 		return value;
 	}
 
-	// the array of stream names in schema definition order
+	// the array of streams in schema definition order
 	CSmartArray<CSchemaStream>& pStreams = pSchema->SchemaStreams;
 
-	// loop through the names and read the values for the given record
+	// first stream needs to be initialized
 	bool bFirst = true;
-	//for ( auto& node : m_Streams.Items )
+
+	// loop through the schema streams in the order they are defined
+	// in the original XML file
 	for ( auto& node : pStreams.Items )
 	{
+		// name of the stream
 		const CString csName = node->Name;
+
+		// find the stream using its name
 		shared_ptr<CStream>& pStream = m_Streams.find( csName );
+
+		// read the data from the stream at the given record number
 		CString csData = pStream->String[ ulRecord ].Trim();
+
+		// CSV data does not parse easily when there is no data in 
+		// a column, so instead of seeing this ",,", this is shown
+		// instead ",<empty>,"
 		if ( csData.IsEmpty() )
 		{
 			csData = _T( "<empty>" );
 		}
 
+		// setup the output for the first column
 		if ( bFirst )
 		{
 			bFirst = false;
 			value.first = csName;
 			value.second = csData;
 		} 
-		else
+		else // remaining columns are preceded with a comma
 		{
 			value.first += _T( "," );
 			value.first += csName;
@@ -242,7 +261,7 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 		}
 	}
 
-	// persist the value
+	// persist the CSV value
 	CSV[ ulRecord ] = value;
 
 	return value;

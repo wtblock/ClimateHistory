@@ -508,6 +508,9 @@ protected:
 
 // protected methods
 protected:
+
+// public methods
+public:
 	// index by key fields
 	inline void Index()
 	{
@@ -532,8 +535,6 @@ protected:
 		}
 	}
 
-// public methods
-public:
 	// create the collection's steams and return true if they 
 	// already exist
 	bool CreateStreams
