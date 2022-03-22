@@ -49,11 +49,14 @@ protected:
 	// folder containing the root of the project
 	CString m_csRoot;
 
-	// collection version
+	// optional version name the collection belongs to
 	CString m_csVersion;
 
-	// collection group
+	// optional group name the collection belongs to
 	CString m_csGroup;
+
+	// name of the collection the stream belongs to
+	CString m_csCollection;
 
 	// pathname of the collection
 	CString m_csPathName;
@@ -137,33 +140,47 @@ public:
 	__declspec( property( get = GetRoot, put = SetRoot ) )
 		CString Root;
 
-	// collection version
+	// optional version name the collection belongs to
 	inline CString GetVersion()
 	{
 		return m_csVersion;
 	}
-	// collection version
+	// optional version name the collection belongs to
 	inline void SetVersion( CString value )
 	{
 		m_csVersion = value;
 	}
-	// collection version
+	// optional version name the collection belongs to
 	__declspec( property( get = GetVersion, put = SetVersion ) )
 		CString Version;
 
-	// collection group
+	// optional group name the collection belongs to
 	inline CString GetGroup()
 	{
 		return m_csGroup;
 	}
-	// collection group
+	// optional group name the collection belongs to
 	inline void SetGroup( CString value )
 	{
 		m_csGroup = value;
 	}
-	// collection group
+	// optional group name the collection belongs to
 	__declspec( property( get = GetGroup, put = SetGroup ) )
 		CString Group;
+
+	// name of the collection the streams belong to
+	inline CString GetCollection()
+	{
+		return m_csCollection;
+	}
+	// name of the collection the streams belong to
+	inline void SetCollection( CString value )
+	{
+		m_csCollection = value;
+	}
+	// name of the collection the streams belong to
+	__declspec( property( get = GetCollection, put = SetCollection ) )
+		CString Collection;
 
 	// comma separated labels and values for a record
 	pair<CString,CString> GetCSV( ULONG ulRecord );
@@ -522,8 +539,11 @@ public:
 	bool CreateStreams
 	(
 		CSchemas* pDataSchema,
-		CString csSchema, CString csRoot,
-		CString csVersion = _T( "" ), CString csGroup = _T( "" )
+		CString csSchema, // schema the collection is modeled after
+		CString csRoot, // root folder of the collection
+		CString csCollection, // the collection name
+		CString csGroup = _T( "" ), // optional group
+		CString csVersion = _T( "" ) // optional version
 	);
 
 	// make a key from an array of key values

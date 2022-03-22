@@ -42,7 +42,8 @@ public:
 	(
 		// collection of data streams
 		CKeyedCollection<CString, CStream>& streams,
-		shared_ptr<CStream>& pStream, CString csGUID, ULONG ulRecord,
+		shared_ptr<CStream>& pStream, CString csCollection,
+		CString csGUID, ULONG ulRecord,
 		CSchemaStream::ENUM_COLLECTION eType 
 	);
 	

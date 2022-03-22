@@ -100,8 +100,11 @@ ULONG CClimateStations::CreateStationList()
 	// the schema for the station list
 	shared_ptr<CSchema>& refSchema = arrDefs.get( lSchema );
 
-	// collection name from the schema
-	const CString csCollectionName = refSchema->Name;
+	// name of the schema the collection is modeled after
+	const CString csSchema = refSchema->Name;
+
+	// the collection name is the same as the schema
+	const CString csCollection = csSchema;
 
 	// array schema streams
 	CSmartArray<CSchemaStream>& refStreams = refSchema->SchemaStreams;
@@ -109,7 +112,7 @@ ULONG CClimateStations::CreateStationList()
 	// ask the collection to create its folder and streams
 	bool bPreexist = CreateStreams
 	( 
-		Host->Schemas, csCollectionName, Host->WorkingFolder 
+		Host->Schemas, csSchema, Host->WorkingFolder, csCollection 
 	);
 
 	// if the collection did not preexist, we need to read the source

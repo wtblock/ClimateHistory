@@ -10,8 +10,11 @@
 bool CStreams::CreateStreams
 ( 
 	CSchemas* pDataSchema,
-	CString csSchema, CString csRoot, 
-	CString csVersion, CString csGroup
+	CString csSchema, // schema the collection is modeled after
+	CString csRoot, // root folder of the collection
+	CString csCollection, // the collection name
+	CString csGroup /*= _T( "" )*/, // optional group
+	CString csVersion /*= _T( "" )*/ // optional version
 )
 {
 	USES_CONVERSION;
@@ -22,6 +25,7 @@ bool CStreams::CreateStreams
 	Root = csRoot;
 	Version = csVersion;
 	Group = csGroup;
+	Collection = csCollection;
 
 	const CString csFolder = PathName;
 
@@ -45,9 +49,8 @@ bool CStreams::CreateStreams
 	}
 
 	// build a path to the collection 
-	const CString csCollectionName = pSchema->Name;
 	const CString csCollectionFolder = 
-		csFolder + _T( "\\" ) + csCollectionName + _T( "\\" );
+		csFolder + _T( "\\" ) + csCollection + _T( "\\" );
 	if ( !::PathFileExists( csCollectionFolder ) )
 	{
 		::SHCreateDirectory( NULL, A2CW( csCollectionFolder ));
@@ -185,11 +188,40 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 {
 	pair<CString, CString> value;
 
+	// name of the schema this collection is based on
+	const CString csSchema = Schema;
+
+	const LONG lSchema = DataSchema->nameFind( csSchema );
+
+	if ( lSchema == -1 )
+	{
+		// flag the problem if it happens
+		CHelper::ErrorMessage( __FILE__, __LINE__ );
+		ASSERT( FALSE );
+		return value;
+	}
+
+	CSmartArray<CSchema>& Schemas = DataSchema->Schemas;
+	shared_ptr<CSchema>& pSchema = Schemas.get( lSchema );
+	if ( pSchema == nullptr )
+	{
+		// flag the problem if it happens
+		CHelper::ErrorMessage( __FILE__, __LINE__ );
+		ASSERT( FALSE );
+		return value;
+	}
+
+	// the array of stream names in schema definition order
+	CSmartArray<CSchemaStream>& pStreams = pSchema->SchemaStreams;
+
 	// loop through the names and read the values for the given record
 	bool bFirst = true;
-	for ( auto& node : m_Streams.Items )
+	//for ( auto& node : m_Streams.Items )
+	for ( auto& node : pStreams.Items )
 	{
-		CString csData = node.second->String[ ulRecord ].Trim();
+		const CString csName = node->Name;
+		shared_ptr<CStream>& pStream = m_Streams.find( csName );
+		CString csData = pStream->String[ ulRecord ].Trim();
 		if ( csData.IsEmpty() )
 		{
 			csData = _T( "<empty>" );
@@ -198,13 +230,13 @@ pair<CString, CString> CStreams::GetCSV( ULONG ulRecord )
 		if ( bFirst )
 		{
 			bFirst = false;
-			value.first = node.first;
+			value.first = csName;
 			value.second = csData;
 		} 
 		else
 		{
 			value.first += _T( "," );
-			value.first += node.first;
+			value.first += csName;
 			value.second += _T( "," );
 			value.second += csData;
 		}

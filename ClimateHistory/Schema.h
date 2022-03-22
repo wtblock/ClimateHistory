@@ -27,7 +27,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // protected Name index data
 protected:
-// index of schema Names
+	// index of schema Names
 	MAP_NAMES m_indexNames;
 
 // public Name index properties
@@ -151,7 +151,8 @@ public:
 		CString Name;
 
 	// description
-	inline CString GetDescription(){
+	inline CString GetDescription()
+	{
 		return m_csDescription;
 	}
 	// description

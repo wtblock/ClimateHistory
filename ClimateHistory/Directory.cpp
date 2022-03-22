@@ -36,19 +36,30 @@ void CDirectory::AddDirectoryEntry
 ( 
 	// collection of data streams
 	CKeyedCollection<CString, CStream>& streams,
-	shared_ptr<CStream>& pStream, CString csGUID, ULONG ulRecord,
-	CSchemaStream::ENUM_COLLECTION eType
+	shared_ptr<CStream>& pStream, // stream being recorded
+	CString csCollection, // parent collection of the stream
+	CString csGUID, // globally unique identifier for the stream
+	ULONG ulRecord, // record number in the directory
+	CSchemaStream::ENUM_COLLECTION eType // type of collection
 )
 {
+	// globally unique identification of the record
 	shared_ptr<CStream>& pGUID = streams.find( _T( "GUID" ) );
 	pGUID->String[ ulRecord ] = csGUID;
 
+	// optional version the stream belongs to
 	shared_ptr<CStream>& pVersion = streams.find( _T( "Version" ) );
 	pVersion->String[ ulRecord ] = Version;
 
+	// optional group the streams belong to
 	shared_ptr<CStream>& pGroup = streams.find( _T( "Group" ) );
 	pGroup->String[ ulRecord ] = Group;
 
+	// name of the collection the streams are a member of
+	shared_ptr<CStream>& pCollection = streams.find( _T( "Collection" ) );
+	pCollection->String[ ulRecord ] = csCollection;
+
+	// the name of the stream
 	shared_ptr<CStream>& pName = streams.find( _T( "Name" ) );
 	pName->String[ ulRecord ] = pStream->Name;
 
@@ -93,8 +104,11 @@ ULONG CDirectory::CreateOpenDirctory()
 	// the schema for the station list
 	shared_ptr<CSchema>& refSchema = arrDefs.get( lSchema );
 
-	// collection name from the schema
-	const CString csCollectionName = refSchema->Name;
+	// name of the schema the collection is modeled after
+	const CString csSchema = refSchema->Name;
+
+	// the collection name is the same as the schema
+	const CString csCollection = csSchema;
 
 	// the keys to uniquely identify a record
 	const CString csKeys = refSchema->UniqueKeys;
@@ -105,7 +119,7 @@ ULONG CDirectory::CreateOpenDirctory()
 	// ask the collection to create its folder and streams
 	bool bPreexist = CreateStreams
 	(
-		Host->Schemas, csCollectionName, Host->WorkingFolder
+		Host->Schemas, csSchema, Host->WorkingFolder, csCollection
 	);
 
 	// number of stream in station list collection
@@ -161,7 +175,12 @@ ULONG CDirectory::CreateOpenDirctory()
 				CSchemaStream::ecDirectory;
 			AddDirectoryEntry
 			( 
-				streams, stream.second, csGUID, ulRecord, eType 
+				streams, // collection of data streams
+				stream.second, // stream being recorded
+				csCollection, // parent collection of the stream
+				csGUID, // globally unique identifier for the stream
+				ulRecord, // record number in the directory
+				eType // type of collection
 			);
 
 			ulRecord++;

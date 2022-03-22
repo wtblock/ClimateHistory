@@ -36,10 +36,11 @@
 		Name="Directory"
 		Description="List of data streams in this project"
 		Schema="Directory"
-		IndexKeys="Version,Group,Name">
+		IndexKeys="Version,Group,Collection,Name">
 		<Stream Name="GUID" Type="VT_I1" Size="39" UnitCategory="" Title="GUID" Description="Globally Unique Identifier" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
 		<Stream Name="Version" Type="VT_I1" Size="32" UnitCategory="" Title="Version Name" Description="Top level folder of the collection (blank for unversioned data)" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
 		<Stream Name="Group" Type="VT_I1" Size="32" UnitCategory="" Title="Group Name" Description="Second level folder of associated collections (blank for ungrouped data)" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
+		<Stream Name="Collection" Type="VT_I1" Size="32" UnitCategory="" Title="Collection Name" Description="Name of the collection the streams belong to" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
 		<Stream Name="Name" Type="VT_I1" Size="32" UnitCategory="" Title="Stream Name" Description="Name of the stream in the collection" PropertyGroup="Identifiers" Entry="free form" Enumeration=""/>
 		<Stream Name="Schema" Type="VT_I1" Size="32" UnitCategory="" Title="Schema Name" Description="Defines the collection streams" PropertyGroup="Attributes" Entry="free form" Enumeration=""/>
 		<Stream Name="Description" Type="VT_I1" Size="80" UnitCategory="" Title="Description" Description="Describes the contents of the stream" PropertyGroup="Attributes" Entry="free form" Enumeration=""/>
