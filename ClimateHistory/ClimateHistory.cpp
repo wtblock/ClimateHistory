@@ -393,74 +393,74 @@ int _tmain( int argc, TCHAR* argv[], TCHAR* envp[] )
 	// the pathname of the executable
 	const CString csExe = arrArgs[ 0 ];
 
-	// create a context block so the project goes 
-	// out of context before the program ends to prevent
-	// memory leaks
-	{
-		shared_ptr<CProject> pProject = shared_ptr<CProject>
-		(	
-			new CProject( csExe, csPath, csStationPath )
-		);
+	//// create a context block so the project goes 
+	//// out of context before the program ends to prevent
+	//// memory leaks
+	//{
+	//	shared_ptr<CProject> pProject = shared_ptr<CProject>
+	//	(	
+	//		new CProject( csExe, csPath, csStationPath )
+	//	);
 
-		// there should only be one reference count at this point
-		const long lCount = pProject.use_count();
+	//	// there should only be one reference count at this point
+	//	const long lCount = pProject.use_count();
+
+	//}
+
+	// crawl through directory tree defined by the command line
+	// parameter trolling for given climate file extensions
+	RecursePath( csPath, _T( ".tmax" ), fOut, fErr );
+	RecursePath( csPath, _T( ".tmin" ), fOut, fErr );
+	RecursePath( csPath, _T( ".tavg" ), fOut, fErr );
+
+	for ( auto& node : m_ClimateYears.Items )
+	{
+		const CString csYear = node.second->Year;
+
+		// measurements for this year
+		const float fMaximum = node.second->Maximum;
+		const float fMinimum = node.second->Minimum;
+		const float fAverage = node.second->Average;
+
+		// convert the measurements to Fahrenheit
+		const float fMissing = CClimateTemperature::GetMissingValue();
+		const float fMaxF = CHelper::GetFahrenheit( fMaximum, fMissing );
+		const float fMinF = CHelper::GetFahrenheit( fMinimum, fMissing );
+		const float fAvgF = CHelper::GetFahrenheit( fAverage, fMissing );
+
+		// collect Fahrenheit measurements for each year
+		m_arrMaximums.push_back( YEAR_VALUE( csYear, fMaxF ) );
+		m_arrMinimums.push_back( YEAR_VALUE( csYear, fMinF ) );
+		m_arrAverages.push_back( YEAR_VALUE( csYear, fAvgF ) );
+
+		// the number of stations for each measurement
+		const int nMaxStations = node.second->MaxStations;
+		const int nMinStations = node.second->MinStations;
+		const int nAvgStations = node.second->AvgStations;
+
+		// the number of valid readings for each measurement
+		const int nMaxReadings = node.second->MaxReadings;
+		const int nMinReadings = node.second->MinReadings;
+		const int nAvgReadings = node.second->AvgReadings;
+
+		// count the number value greater than several temperatures
+		node.second->CountGreaterValues();
+
+		// get the yearly collection
+		vector<CStationYear::GREATER_COUNT> greaterValues = 
+			node.second->GreaterCounts;
+
+		// accumulate these values in a vector for all of the years
+		CLIMATE_COUNT count;
+		count.first = csYear;
+		count.second = greaterValues;
+		m_ClimaterCounts.push_back( count );
 
 	}
 
-//	// crawl through directory tree defined by the command line
-//	// parameter trolling for given climate file extensions
-//	RecursePath( csPath, _T( ".tmax" ), fOut, fErr );
-//	RecursePath( csPath, _T( ".tmin" ), fOut, fErr );
-//	RecursePath( csPath, _T( ".tavg" ), fOut, fErr );
-//
-//	for ( auto& node : m_ClimateYears.Items )
-//	{
-//		const CString csYear = node.second->Year;
-//
-//		// measurements for this year
-//		const float fMaximum = node.second->Maximum;
-//		const float fMinimum = node.second->Minimum;
-//		const float fAverage = node.second->Average;
-//
-//		// convert the measurements to Fahrenheit
-//		const float fMissing = CClimateTemperature::GetMissingValue();
-//		const float fMaxF = CHelper::GetFahrenheit( fMaximum, fMissing );
-//		const float fMinF = CHelper::GetFahrenheit( fMinimum, fMissing );
-//		const float fAvgF = CHelper::GetFahrenheit( fAverage, fMissing );
-//
-//		// collect Fahrenheit measurements for each year
-//		m_arrMaximums.push_back( YEAR_VALUE( csYear, fMaxF ) );
-//		m_arrMinimums.push_back( YEAR_VALUE( csYear, fMinF ) );
-//		m_arrAverages.push_back( YEAR_VALUE( csYear, fAvgF ) );
-//
-//		// the number of stations for each measurement
-//		const int nMaxStations = node.second->MaxStations;
-//		const int nMinStations = node.second->MinStations;
-//		const int nAvgStations = node.second->AvgStations;
-//
-//		// the number of valid readings for each measurement
-//		const int nMaxReadings = node.second->MaxReadings;
-//		const int nMinReadings = node.second->MinReadings;
-//		const int nAvgReadings = node.second->AvgReadings;
-//
-//		// count the number value greater than several temperatures
-//		node.second->CountGreaterValues();
-//
-//		// get the yearly collection
-//		vector<CStationYear::GREATER_COUNT> greaterValues = 
-//			node.second->GreaterCounts;
-//
-//		// accumulate these values in a vector for all of the years
-//		CLIMATE_COUNT count;
-//		count.first = csYear;
-//		count.second = greaterValues;
-//		m_ClimaterCounts.push_back( count );
-//
-//	}
-//
-//	// the actual goal is to output comma separated values (CSV)
-//	OutputCSV( fOut );
-//
+	// the actual goal is to output comma separated values (CSV)
+	OutputCSV( fOut );
+
 
 	// all is good
 	return 0;
