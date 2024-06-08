@@ -39,9 +39,6 @@
     <ClInclude Include="CHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClimateStation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ClimateTemperature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,48 +48,12 @@
     <ClInclude Include="ClimateYear.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XmlCollection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Schema.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SmartArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Directory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Schemas.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Streams.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SchemaStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StreamCache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClimateStations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClimateHistory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClimateStation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClimateTemperature.cpp">
@@ -104,36 +65,6 @@
     <ClCompile Include="ClimateYear.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlCollection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Schema.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Directory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Project.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Schemas.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Streams.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SchemaStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StreamCache.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClimateStations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ClimateHistory.rc">
@@ -142,16 +73,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="DataSchema.xml">
-      <Filter>Settings</Filter>
-    </Xml>
-    <Xml Include="UnitCategory.xml">
-      <Filter>Settings</Filter>
-    </Xml>
-    <Xml Include="UnitGroups.xml">
-      <Filter>Settings</Filter>
-    </Xml>
   </ItemGroup>
 </Project>

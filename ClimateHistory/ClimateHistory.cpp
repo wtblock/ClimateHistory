@@ -5,8 +5,6 @@
 #include "stdafx.h"
 #include "ClimateHistory.h"
 #include "CHelper.h"
-#include "SmartArray.h"
-#include "KeyedCollection.h"
 
 /////////////////////////////////////////////////////////////////////////////
 CWinApp theApp;

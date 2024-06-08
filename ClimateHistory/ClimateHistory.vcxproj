@@ -157,39 +157,20 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Directory.h" />
-    <ClInclude Include="Project.h" />
-    <ClInclude Include="SchemaStream.h" />
-    <ClInclude Include="SmartArray.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="ClimateHistory.h" />
     <ClInclude Include="ClimateTemperature.h" />
-    <ClInclude Include="ClimateStation.h" />
     <ClInclude Include="ClimateYear.h" />
     <ClInclude Include="KeyedCollection.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Schema.h" />
-    <ClInclude Include="Schemas.h" />
-    <ClInclude Include="ClimateStations.h" />
     <ClInclude Include="StationYear.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Stream.h" />
-    <ClInclude Include="Streams.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="StreamCache.h" />
-    <ClInclude Include="XmlCollection.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClimateHistory.cpp" />
     <ClCompile Include="ClimateTemperature.cpp" />
-    <ClCompile Include="ClimateStation.cpp" />
     <ClCompile Include="ClimateYear.cpp" />
-    <ClCompile Include="Directory.cpp" />
-    <ClCompile Include="Project.cpp" />
-    <ClCompile Include="Schema.cpp" />
-    <ClCompile Include="Schemas.cpp" />
-    <ClCompile Include="SchemaStream.cpp" />
-    <ClCompile Include="ClimateStations.cpp" />
     <ClCompile Include="StationYear.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -197,25 +178,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Stream.cpp" />
-    <ClCompile Include="Streams.cpp" />
-    <ClCompile Include="StreamCache.cpp" />
-    <ClCompile Include="XmlCollection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ClimateHistory.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="DataSchema.xml">
-      <SubType>Designer</SubType>
-    </Xml>
-    <Xml Include="UnitCategory.xml" />
-    <Xml Include="UnitGroups.xml">
-      <SubType>Designer</SubType>
-    </Xml>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

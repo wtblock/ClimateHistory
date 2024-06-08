@@ -5,10 +5,8 @@
 #pragma once
 
 #include "resource.h"
-#include "ClimateStation.h"
 #include "StationYear.h"
 #include "ClimateYear.h"
-#include "Project.h"
 #include <memory>
 
 using namespace std;
