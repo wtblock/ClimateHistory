@@ -73,5 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+    <None Include="USHCN Combined Raw and Modified Data.xlsx" />
   </ItemGroup>
 </Project>
